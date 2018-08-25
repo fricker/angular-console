@@ -7,6 +7,7 @@ import {
   generateRoutes
 } from '@angular-console/feature-generate';
 import { FeatureRunModule, runRoutes } from '@angular-console/feature-run';
+import { FeatureEntitiesModule, entityRoutes } from '@angular-console/feature-entities';
 import { UiModule } from '@angular-console/ui';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -57,7 +58,6 @@ export const workspaceRoutes: Route[] = [
         path: 'projects',
         component: ProjectsComponent
       },
-      { path: '', pathMatch: 'full', redirectTo: 'projects' },
       {
         data: { state: 'extensions' },
         path: 'extensions',
@@ -68,7 +68,17 @@ export const workspaceRoutes: Route[] = [
         path: 'generate',
         children: generateRoutes
       },
-      { data: { state: 'tasks' }, path: 'tasks', children: runRoutes }
+      {
+        data: { state: 'tasks' },
+        path: 'tasks',
+        children: runRoutes
+      },
+      {
+        data: { state: 'entities' },
+        path: 'entities',
+        children: entityRoutes
+      },
+      { path: '', pathMatch: 'full', redirectTo: 'projects' }
     ]
   }
 ];
@@ -80,6 +90,7 @@ export const workspaceRoutes: Route[] = [
     FeatureExtensionsModule,
     FeatureGenerateModule,
     FeatureRunModule,
+    FeatureEntitiesModule,
     ReactiveFormsModule,
     UiModule
   ],

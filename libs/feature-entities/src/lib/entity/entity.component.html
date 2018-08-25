@@ -1,0 +1,23 @@
+
+<ui-task-runner *ngIf="project$ | async as project"
+terminalWindowTitle="Command output">
+<ui-flags
+  [configurations]="[]"
+  [prefix]="[project.name, 'modules.json']"
+  [fields]="[]"
+  (value)="onFlagsChange($event)"
+  (action)="onRun()"
+  (stop)="onStop()"
+  [path]="path()">
+</ui-flags>
+<ui-terminal [command]="command$ | async" [input]="(commandOutput$|async)?.out" #output></ui-terminal>
+</ui-task-runner>
+
+<!--
+<mbd-editor *ngIf="project$ | async as project"
+  terminalWindowTitle="Command output">
+  <div class="mbd-edit"><edit-entity></edit-entity></div>
+  <ui-terminal [command]="command$ | async" [input]="(commandOutput$|async)?.out" #output></ui-terminal>
+</mbd-editor>
+-->
+

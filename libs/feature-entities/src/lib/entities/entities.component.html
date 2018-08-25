@@ -1,0 +1,6 @@
+<ui-task-selector
+  [taskCollections$]="projectTasks$"
+  [filterPlaceholder]="'Entity Metadata'"
+  (selectionChange)="navigateToSelectedTarget($event)">
+  <router-outlet></router-outlet>
+</ui-task-selector>

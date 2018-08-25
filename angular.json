@@ -100,8 +100,7 @@
       "root": "apps/angular-console-e2e/",
       "sourceRoot": "apps/angular-console-e2e/src",
       "projectType": "application",
-      "architect": {
-      }
+      "architect": {}
     },
     "feature-workspaces": {
       "root": "libs/feature-workspaces",
@@ -291,6 +290,34 @@
             "tsConfig": [
               "libs/schema/tsconfig.lib.json",
               "libs/schema/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "feature-entities": {
+      "root": "libs/feature-entities",
+      "sourceRoot": "libs/feature-entities/src",
+      "projectType": "library",
+      "prefix": "mbd",
+      "architect": {
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "libs/feature-entities/src/test.ts",
+            "tsConfig": "libs/feature-entities/tsconfig.spec.json",
+            "karmaConfig": "libs/feature-entities/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/feature-entities/tsconfig.lib.json",
+              "libs/feature-entities/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
