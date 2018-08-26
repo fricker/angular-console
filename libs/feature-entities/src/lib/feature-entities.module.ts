@@ -10,10 +10,10 @@ import {
 import { Route, RouterModule } from '@angular/router';
 import { UiModule } from '@angular-console/ui';
 
-import { EntityModule } from './entity/entity.module';
 import { EntityComponent } from './entity/entity.component';
 import { EntitiesComponent } from './entities/entities.component';
 import { EditorComponent } from './editor/editor.component';
+import { ContentModule } from './content/content.module';
 
 export const entityRoutes: Route[] = [
   {
@@ -36,8 +36,8 @@ export const entityRoutes: Route[] = [
     RouterModule,
     ReactiveFormsModule,
     UiModule,
-    EntityModule
+    ContentModule
   ],
-  declarations: [EntitiesComponent, EditorComponent]
+  declarations: [EntitiesComponent, EntityComponent, EditorComponent]
 })
 export class FeatureEntitiesModule {}

@@ -1,9 +1,7 @@
 <div class="outer-container" fxLayout="column" fxLayoutAlign="space-between" fxFlex>
   <div class="ui-flags-container">
-    <div>Testing</div>
-    <ng-content select=".mbd-edit"></ng-content>
+    <ng-content select="mbd-content"></ng-content>
   </div>
-
   <div class="ui-terminal-container" fxFlex [@growShrink]="terminalAnimationState | async">
     <div class="window-chrome" fxLayout="row" fxLayoutAlign="space-between center">
       <svg xmlns="http://www.w3.org/2000/svg" width="54" height="14" viewBox="0 0 54 14">

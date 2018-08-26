@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, merge, Subscription, EMPTY } from 'rxjs';
 import { map, delay } from 'rxjs/operators';
-// import { FlagsComponent } from '../flags/flags.component';
+import { ContentComponent } from '../content/content.component';
 import { TerminalComponent } from '@angular-console/ui';
 
 const ANIMATION_DURATION = 300;
@@ -40,7 +40,7 @@ const ANIMATION_DURATION = 300;
 export class EditorComponent implements AfterContentInit, OnDestroy {
   @Input() terminalWindowTitle: string;
 
-  // @ContentChild(FlagsComponent) flagsComponent: FlagsComponent | undefined;
+  @ContentChild(ContentComponent) contentComponent: ContentComponent | undefined;
   @ContentChild(TerminalComponent) terminalComponent: TerminalComponent;
 
   terminalVisible = new BehaviorSubject(true);
@@ -52,17 +52,15 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
   ngAfterContentInit() {
     const TIME_BUFFER = 50;
     const DELAY = ANIMATION_DURATION + TIME_BUFFER;
-    /*
-    const flagsComponentResize$ = this.flagsComponent
-      ? this.flagsComponent.resizeFlags.pipe(delay(DELAY))
+    const contentComponentResize$ = this.contentComponent
+      ? this.contentComponent.resizeFlags.pipe(delay(DELAY))
       : EMPTY;
     this.resizeSubscription = merge(
-      flagsComponentResize$,
+      contentComponentResize$,
       this.terminalVisible.pipe(delay(DELAY))
     ).subscribe(() => {
       this.terminalComponent.resizeTerminal();
     });
-    */
   }
 
   ngOnDestroy() {
