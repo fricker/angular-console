@@ -5,7 +5,7 @@ import { UiModule } from '@angular-console/ui';
 import { ContentComponent } from './content.component';
 
 @NgModule({
-  schemas: [/*CUSTOM_ELEMENTS_SCHEMA*/],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, UiModule],
   declarations: [ContentComponent],
   exports: [ContentComponent]

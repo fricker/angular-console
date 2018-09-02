@@ -25,6 +25,7 @@ import {
 } from './completions';
 import * as os from 'os';
 import { catchError } from 'rxjs/operators';
+import { readFileSync } from 'fs';
 
 const dirSync = require('tmp').dirSync;
 const spawn = require('node-pty-prebuilt').spawn;
@@ -521,6 +522,28 @@ export const filesType: graphql.GraphQLObjectType = new graphql.GraphQLObjectTyp
   }
 );
 
+export const metadataType: graphql.GraphQLObjectType = new graphql.GraphQLObjectType(
+  {
+    name: 'Metadata',
+    fields: () => {
+      return {
+        projectType: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        projectName: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        path: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        content: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        }
+      };
+    }
+  }
+);
+
 export const queryType: graphql.GraphQLObjectType = new graphql.GraphQLObjectType(
   {
     name: 'Database',
@@ -645,6 +668,38 @@ export const queryType: graphql.GraphQLObjectType = new graphql.GraphQLObjectTyp
             path: { type: graphql.GraphQLString },
             onlyDirectories: { type: graphql.GraphQLBoolean },
             showHidden: { type: graphql.GraphQLBoolean }
+          }
+        },
+        metadata: {
+          type: new graphql.GraphQLNonNull(metadataType),
+          args: {
+            workspace: { type: graphql.GraphQLString },
+            project: { type: graphql.GraphQLString },
+            path: { type: graphql.GraphQLString }
+          },
+          resolve: async (_: any, args: any) => {
+            try {
+              const angularJson = JSON.parse(readFileSync(args.workspace + '/angular.json').toString());
+              const project = angularJson.projects[args.project];
+              if (!project) {
+                throw new Error('project ' + args.project + ' not found');
+              }
+              const contentPath = args.workspace + '/' + project.sourceRoot + '/meta/' + args.path;
+              const content = readFileSync(contentPath).toString();
+              return {
+                projectType: project.projectType,
+                projectName: args.project,
+                path: args.path,
+                content: content
+              };
+            } catch (e) {
+              console.log('Metadata request failure', e);
+              throw new Error(
+                `Error when requesting metadata "${args.path}". Message: "${
+                  e.message
+                }"`
+              );
+            }
           }
         }
       };

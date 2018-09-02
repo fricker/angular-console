@@ -1,0 +1,19 @@
+
+<mbd-editor *ngIf="configuration$ | async as entityConfig"
+  terminalWindowTitle="Command output">
+  <mbd-content
+    [entityConfig]="entityConfig"
+    [configurations]="[]"
+    [prefix]="[entityConfig.projectName, entityConfig.path]"
+    [fields]="[]"
+    (value)="onFlagsChange($event)"
+    (action)="onRun()"
+    (stop)="onStop()"
+    [path]="workspacePath()">
+  </mbd-content>
+  <ui-terminal
+    [command]="command$ | async"
+    [input]="(commandOutput$|async)?.out"
+    #output>
+  </ui-terminal>
+</mbd-editor>

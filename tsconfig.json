@@ -53,8 +53,8 @@
       "@angular-console/schema": [
         "libs/schema/src/index.ts"
       ],
-      "@angular-console/feature-entities": [
-        "libs/feature-entities/src/index.ts"
+      "@angular-console/feature-edit": [
+        "libs/feature-edit/src/index.ts"
       ]
     }
   },

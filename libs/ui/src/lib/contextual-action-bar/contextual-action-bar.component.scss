@@ -52,3 +52,7 @@ mat-toolbar.title-bar {
     color: rgb(185, 185, 185);
   }
 }
+
+:host {
+  flex: unset !important;
+}

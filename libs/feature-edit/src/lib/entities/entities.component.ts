@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { Task, TaskCollection, TaskCollections } from '@angular-console/ui';
+import { TaskCollections } from '@angular-console/ui';
 import { Project } from '@angular-console/schema';
 import { Finder } from '@angular-console/utils';
 import { Apollo } from 'apollo-angular';
@@ -13,8 +13,9 @@ import {
   startWith,
   distinctUntilChanged
 } from 'rxjs/operators';
-import { EntityMetadata } from '../entity/entity-metadata';
-import { EntityProjects, EntityTarget } from './entity-projects';
+import { ProjectMetadata } from '../project/metadata/project-metadata';
+import { ProjectMetadataService } from '../project/metadata/project-metadata.service';
+import { EntityTasks, EntityTarget } from '../entity/tasks/entity-tasks';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,30 +59,31 @@ export class EntitiesComponent implements OnInit, OnDestroy {
       if (firstChild) {
         return {
           projectName: decodeURIComponent(firstChild.params.project),
-          targetName: decodeURIComponent(firstChild.params.target)
+          targetPath: decodeURIComponent(firstChild.params.target)
         };
       }
       return {
         projectName: '',
-        targetName: ''
+        targetPath: ''
       };
     }),
     distinctUntilChanged(
       (a: EntityTarget, b: EntityTarget) =>
-        a.projectName === b.projectName && a.targetName === b.targetName
+        a.projectName === b.projectName && a.targetPath === b.targetPath
     )
   );
 
   private entityTasksSubject = new ReplaySubject<TaskCollections<EntityTarget>>(1);
   readonly projectTasks$ = this.entityTasksSubject.asObservable();
 
-  readonly workspaceProjects$: Observable<EntityProjects<EntityMetadata>> =
+  readonly workspaceProjects$: Observable<EntityTasks<ProjectMetadata>> =
     combineLatest(this.projects$, this.selectedTargetId$).pipe(
       map(([projects, target]) => {
-        const metadataArray: Array<EntityMetadata> = projects.map(
-          project => new EntityMetadata(project, this.finder)
+        const metadataArray: Array<ProjectMetadata> = projects.map(
+          project => new ProjectMetadata(project, this.finder)
         );
-        return new EntityProjects<EntityMetadata>(this.route.snapshot.params.path, metadataArray, target);
+        console.log('workspaceProjects$ - target', target);
+        return new EntityTasks<ProjectMetadata>(this.route.snapshot.params.path, metadataArray, target, ['templates']);
       })
     );
 
@@ -91,7 +93,8 @@ export class EntitiesComponent implements OnInit, OnDestroy {
     private readonly apollo: Apollo,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly finder: Finder
+    private readonly finder: Finder,
+    private readonly metadataService: ProjectMetadataService
   ) {}
 
   ngOnInit() {
@@ -111,7 +114,7 @@ export class EntitiesComponent implements OnInit, OnDestroy {
       this.router.navigate(
         [
           encodeURIComponent(target.projectName),
-          encodeURIComponent(target.targetName)
+          encodeURIComponent(target.targetPath)
         ],
         { relativeTo: this.route }
       );

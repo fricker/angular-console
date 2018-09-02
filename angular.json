@@ -298,26 +298,26 @@
         }
       }
     },
-    "feature-entities": {
-      "root": "libs/feature-entities",
-      "sourceRoot": "libs/feature-entities/src",
+    "feature-edit": {
+      "root": "libs/feature-edit",
+      "sourceRoot": "libs/feature-edit/src",
       "projectType": "library",
       "prefix": "mbd",
       "architect": {
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "libs/feature-entities/src/test.ts",
-            "tsConfig": "libs/feature-entities/tsconfig.spec.json",
-            "karmaConfig": "libs/feature-entities/karma.conf.js"
+            "main": "libs/feature-edit/src/test.ts",
+            "tsConfig": "libs/feature-edit/tsconfig.spec.json",
+            "karmaConfig": "libs/feature-edit/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "libs/feature-entities/tsconfig.lib.json",
-              "libs/feature-entities/tsconfig.spec.json"
+              "libs/feature-edit/tsconfig.lib.json",
+              "libs/feature-edit/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"

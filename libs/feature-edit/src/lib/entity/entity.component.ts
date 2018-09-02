@@ -16,10 +16,9 @@ import {
   tap
 } from 'rxjs/operators';
 
-import { Project } from '@angular-console/schema';
 import {
   ContextualActionBarService,
-  FlagsComponent,
+  // FlagsComponent,
   TaskRunnerComponent,
   TerminalComponent
 } from '@angular-console/ui';
@@ -30,6 +29,8 @@ import {
 } from '@angular-console/utils';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
+import {ProjectMetadataService} from '../project/metadata/project-metadata.service';
+import {EntityConfig} from './entity-config';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,7 +40,7 @@ import gql from 'graphql-tag';
 })
 export class EntityComponent implements OnInit {
 
-  project$: Observable<Project>;
+  configuration$: Observable<EntityConfig>;
   commandArray$ = new BehaviorSubject<{ commands: string[]; valid: boolean }>({
     commands: [],
     valid: true
@@ -48,7 +49,7 @@ export class EntityComponent implements OnInit {
   commandOutput$: Observable<CommandOutput>;
   @ViewChild(TerminalComponent) out: TerminalComponent;
   @ViewChild(TaskRunnerComponent) taskRunner: TaskRunnerComponent;
-  @ViewChild(FlagsComponent) flags: FlagsComponent;
+  // @ViewChild(FlagsComponent) flags: FlagsComponent;
   private readonly ngRun$ = new Subject<any>();
   private readonly ngRunDisabled$ = new BehaviorSubject(true);
 
@@ -57,56 +58,55 @@ export class EntityComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly runner: CommandRunner,
     private readonly serializer: Serializer,
-    private readonly contextActionService: ContextualActionBarService
+    private readonly contextActionService: ContextualActionBarService,
+    private readonly metadataService: ProjectMetadataService
   ) {}
 
   ngOnInit() {
-    const targetDescription$ = this.route.params.pipe(
-      map(p => {
-        if (!p.project || !p.target) return null;
+
+    const targetParams$ = this.route.params.pipe(
+      map(params => {
+        if (!params.project || !params.target) return null;
         return {
-          path: p.path,
-          project: decodeURIComponent(p.project)
+          workspacePath: params.path,
+          projectName: decodeURIComponent(params.project),
+          targetPath: decodeURIComponent(params.target)
         };
       })
     );
 
-    this.project$ = targetDescription$.pipe(
-      switchMap(p => {
-        if (!p) {
+    this.configuration$ = targetParams$.pipe(
+      switchMap(params => {
+        console.log('EntityComponent.ngOnInit - params', params); // TESTING
+        if (!params) {
           return of();
         }
         return this.apollo.query({
           query: gql`
-            query($path: String!, $project: String!) {
-              workspace(path: $path) {
-                projects(name: $project) {
-                  name
-                  root
-                  projectType
-                }
+            query($workspacePath: String!, $projectName: String!, $targetPath: String!) {
+              metadata(workspace: $workspacePath, project: $projectName, path: $targetPath) {
+                projectType,
+                projectName,
+                path,
+                content
               }
             }
           `,
-          variables: p
+          variables: params
         });
       }),
-      map((r: any) => {
-        const project: Project = r.data.workspace.projects[0];
-        /*
-        const architect = project.architect.map(a => ({
-          ...a,
-          schema: this.serializer.normalizeTarget(a.builder, a.schema)
-        }));
-        */
+      map((response: any) => {
+        const metadata = response.data.metadata;
         return {
-          ...project/*,
-          architect*/
-        };
+          projectType: metadata.projectType,
+          projectName: metadata.projectName,
+          path: metadata.path,
+          content: JSON.parse(metadata.content)
+        }
       }),
-      tap((project: Project) => {
-        const contextTitle = this.getContextTitle(project);
-
+      tap((entityConfig: EntityConfig) => {
+        console.log('EntityComponent.ngOnInit - entityConfig', entityConfig); // TESTING
+        const contextTitle = entityConfig.projectName;
         this.contextActionService.contextualActions$.next({
           contextTitle,
           actions: [
@@ -125,7 +125,7 @@ export class EntityComponent implements OnInit {
     this.commandOutput$ = this.ngRun$.pipe(
       withLatestFrom(this.commandArray$),
       tap(() => {
-        this.flags.hideFields();
+        // this.flags.hideFields();
         this.taskRunner.terminalVisible.next(true);
       }),
       switchMap(([_, c]) => {
@@ -139,7 +139,7 @@ export class EntityComponent implements OnInit {
             }
           `,
           {
-            path: this.path(),
+            path: this.workspacePath(),
             runCommand: c.commands
           },
           false
@@ -154,11 +154,7 @@ export class EntityComponent implements OnInit {
     );
   }
 
-  getContextTitle(project: Project) {
-    return project.name;
-  }
-
-  path() {
+  workspacePath() {
     return this.route.snapshot.params.path;
   }
 
@@ -172,5 +168,7 @@ export class EntityComponent implements OnInit {
 
   onFlagsChange(e: { commands: string[]; valid: boolean }) {
     console.log('onFlagsChange', e);
+    setTimeout(() => this.commandArray$.next(e), 0);
+    this.ngRunDisabled$.next(!e.valid);
   }
 }

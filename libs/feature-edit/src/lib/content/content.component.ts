@@ -29,6 +29,7 @@ import {
   startWith,
   switchMap
 } from 'rxjs/operators';
+import {EntityConfig} from '../entity/entity-config';
 
 interface FieldGrouping {
   type: 'important' | 'optional';
@@ -75,6 +76,7 @@ export class ContentComponent {
     this.fieldGroups = this.toFieldGroups(f);
     this.setForm();
   }
+  @Input() entityConfig: EntityConfig;
 
   @Output() readonly value = new EventEmitter();
   @Output() readonly action = new EventEmitter();
@@ -235,6 +237,7 @@ export class ContentComponent {
   }
 
   private emitNext(value: { [p: string]: any }) {
+    console.log('ContentComponent.emitNext', value);
     const configuration =
       this.configurations && value.configurations
         ? [`--configuration=${value.configurations}`]

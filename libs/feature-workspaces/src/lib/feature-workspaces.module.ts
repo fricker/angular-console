@@ -7,7 +7,7 @@ import {
   generateRoutes
 } from '@angular-console/feature-generate';
 import { FeatureRunModule, runRoutes } from '@angular-console/feature-run';
-import { FeatureEntitiesModule, entityRoutes } from '@angular-console/feature-entities';
+import { FeatureEditModule, editRoutes } from '@angular-console/feature-edit';
 import { UiModule } from '@angular-console/ui';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -74,9 +74,9 @@ export const workspaceRoutes: Route[] = [
         children: runRoutes
       },
       {
-        data: { state: 'entities' },
-        path: 'entities',
-        children: entityRoutes
+        data: { state: 'metadata' },
+        path: 'metadata',
+        children: editRoutes
       },
       { path: '', pathMatch: 'full', redirectTo: 'projects' }
     ]
@@ -90,7 +90,7 @@ export const workspaceRoutes: Route[] = [
     FeatureExtensionsModule,
     FeatureGenerateModule,
     FeatureRunModule,
-    FeatureEntitiesModule,
+    FeatureEditModule,
     ReactiveFormsModule,
     UiModule
   ],

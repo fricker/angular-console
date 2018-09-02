@@ -10,12 +10,13 @@ import {
 import { Route, RouterModule } from '@angular/router';
 import { UiModule } from '@angular-console/ui';
 
+import { ProjectMetadataService } from './project/metadata/project-metadata.service';
 import { EntityComponent } from './entity/entity.component';
 import { EntitiesComponent } from './entities/entities.component';
 import { EditorComponent } from './editor/editor.component';
 import { ContentModule } from './content/content.module';
 
-export const entityRoutes: Route[] = [
+export const editRoutes: Route[] = [
   {
     path: '',
     component: EntitiesComponent,
@@ -38,6 +39,7 @@ export const entityRoutes: Route[] = [
     UiModule,
     ContentModule
   ],
+  providers: [ProjectMetadataService],
   declarations: [EntitiesComponent, EntityComponent, EditorComponent]
 })
-export class FeatureEntitiesModule {}
+export class FeatureEditModule {}

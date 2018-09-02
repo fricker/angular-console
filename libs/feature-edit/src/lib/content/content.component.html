@@ -1,4 +1,5 @@
 <form [formGroup]="formGroup">
+  <!--
   <div class="headline-container" fxLayout="row" fxLayoutAlign="space-between center" *ngIf="configurations && configurations.length > 0">
     <div class="headline">
       Configuration
@@ -8,21 +9,26 @@
       <mat-radio-button *ngFor="let config of configurations" [value]="config.name">{{ config.name | titlecase }}</mat-radio-button>
     </mat-radio-group>
   </div>
-
+  -->
   <mat-divider></mat-divider>
 
   <mat-accordion [multi]="true" displayMode="flat">
-    <mat-expansion-panel *ngFor="let fieldGroup of fieldGroups" [expanded]="fieldGroup.expanded" (opened)="resizeFlags.emit()" (closed)="resizeFlags.emit()">
+    <mat-expansion-panel *ngFor="let fieldGroup of fieldGroups"
+      [expanded]="fieldGroup.expanded"
+      (opened)="resizeFlags.emit()"
+      (closed)="resizeFlags.emit()">
+
       <mat-expansion-panel-header>
-        <mat-panel-title *ngIf="fieldGroups.length > 1" [ngSwitch]="fieldGroup.type">
-          <ng-container *ngSwitchCase="'important'">Important fields</ng-container>
-          <ng-container *ngSwitchCase="'optional'">Optional fields</ng-container>
-        </mat-panel-title>
-        <mat-panel-title *ngIf="fieldGroups.length === 1">
-          Fields
+        <mat-panel-title>
+          {{entityConfig.path}}
         </mat-panel-title>
       </mat-expansion-panel-header>
 
+      <div class="field">
+        <mbd-edit-entity [entityConfig]="entityConfig"></mbd-edit-entity>
+      </div>
+
+      <!--
       <div class="field" *ngFor="let field of fieldGroup.fields" [class.error]="formGroup.hasError('required', field.name) && formGroup.get(field.name).touched"
         fxLayout="row" fxLayoutGap="16px" [class.boolean]="field.type === 'boolean'" [class.text]="field.type !== 'boolean'">
         <ng-container *ngIf="field.type === 'boolean' && field.defaultValue !== null">
@@ -83,6 +89,8 @@
 
         </ng-container>
       </div>
-    </mat-expansion-panel>
+      -->
+
+      </mat-expansion-panel>
   </mat-accordion>
 </form>
