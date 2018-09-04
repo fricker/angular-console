@@ -29,7 +29,7 @@ import {
   startWith,
   switchMap
 } from 'rxjs/operators';
-import {EntityConfig} from '../entity/entity-config';
+import {ResourceConfig} from '../resource/resource-config';
 
 interface FieldGrouping {
   type: 'important' | 'optional';
@@ -76,7 +76,7 @@ export class ContentComponent {
     this.fieldGroups = this.toFieldGroups(f);
     this.setForm();
   }
-  @Input() entityConfig: EntityConfig;
+  @Input() resourceConfig: ResourceConfig;
 
   @Output() readonly value = new EventEmitter();
   @Output() readonly action = new EventEmitter();

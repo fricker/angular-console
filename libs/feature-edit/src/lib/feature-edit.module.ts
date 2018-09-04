@@ -11,18 +11,18 @@ import { Route, RouterModule } from '@angular/router';
 import { UiModule } from '@angular-console/ui';
 
 import { ProjectMetadataService } from './project/metadata/project-metadata.service';
-import { EntityComponent } from './entity/entity.component';
-import { EntitiesComponent } from './entities/entities.component';
+import { ResourceComponent } from './resource/resource.component';
+import { ResourcesComponent } from './resources/resources.component';
 import { EditorComponent } from './editor/editor.component';
 import { ContentModule } from './content/content.module';
 
 export const editRoutes: Route[] = [
   {
     path: '',
-    component: EntitiesComponent,
+    component: ResourcesComponent,
     children: [
-      { path: ':project/:target', component: EntityComponent },
-      { path: '', pathMatch: 'full', component: EntityComponent }
+      { path: ':project/:resource', component: ResourceComponent },
+      { path: '', pathMatch: 'full', component: ResourceComponent }
     ]
   }
 ];
@@ -40,6 +40,6 @@ export const editRoutes: Route[] = [
     ContentModule
   ],
   providers: [ProjectMetadataService],
-  declarations: [EntitiesComponent, EntityComponent, EditorComponent]
+  declarations: [ResourcesComponent, ResourceComponent, EditorComponent]
 })
 export class FeatureEditModule {}

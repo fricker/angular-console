@@ -4,30 +4,30 @@ import { LocalFile } from '@angular-console/schema';
 import { TaskCollection, TaskCollections } from '@angular-console/ui';
 import { ProjectMetadata } from '../../project/metadata/project-metadata';
 
-export interface EntityTarget {
+export interface ResourceTarget {
     projectName: string;
-    targetPath: string;
+    resourcePath: string;
 }
 
-export class EntityTasks<PM extends ProjectMetadata> {
+export class ResourceTasks<PM extends ProjectMetadata> {
 
-    private tasksSubject: Subject<TaskCollections<EntityTarget>>;
-    private tasksCollections: Array<TaskCollection<EntityTarget>>;
+    private tasksCollectionsSubject: Subject<TaskCollections<ResourceTarget>>;
+    private tasksCollections: Array<TaskCollection<ResourceTarget>>;
     selectedProject: PM | null = null;
 
     constructor(public workspacePath: string, public projectMetadata: Array<PM>,
-                private target: EntityTarget, private skipDirectories?: string[]) {}
+                private resourceTarget: ResourceTarget, private skipDirectories?: string[]) {}
 
-    set entityTasksSubject(tasksSubject: Subject<TaskCollections<EntityTarget>>) {
-        this.tasksSubject = tasksSubject;
+    set tasksSubject(tasksSubject: Subject<TaskCollections<ResourceTarget>>) {
+        this.tasksCollectionsSubject = tasksSubject;
         this.projectMetadata.forEach((metadata) => {
             this.scanMetadata(metadata);
         });
     }
 
-    protected addTaskCollection(taskCollection: TaskCollection<EntityTarget>) {
+    protected addTaskCollection(taskCollection: TaskCollection<ResourceTarget>) {
         this.tasksCollections = this.tasksCollections ? [...this.tasksCollections, taskCollection] : [taskCollection];
-        this.tasksSubject.next({
+        this.tasksCollectionsSubject.next({
             taskCollections: this.tasksCollections,
             selectedTask: null
         });
@@ -46,37 +46,37 @@ export class EntityTasks<PM extends ProjectMetadata> {
 
     private scanDirectory(metadata: PM, basePath: string, path: string[]) {
         const dirPath = path.length ? basePath + '/' + path.join('/') : basePath;
-        metadata.listFiles(dirPath).subscribe((targetDir) => {
-            const targetDirectories: LocalFile[] = [];
+        metadata.listFiles(dirPath).subscribe((metaDir) => {
+            const metaDirectories: LocalFile[] = [];
             let collectionName = metadata.project.name;
             if (path.length) {
                 collectionName += ' - ' + path.join(' - ');
             }
-            const taskCollection: TaskCollection<EntityTarget> = {
+            const taskCollection: TaskCollection<ResourceTarget> = {
                 collectionName: collectionName,
                 tasks: []
             };
-            targetDir.files.forEach((targetFile) => {
-                if (targetFile.type === 'file') {
-                    let targetPath = targetFile.name;
+            metaDir.files.forEach((resourceFile) => {
+                if (resourceFile.type === 'file') {
+                    let resourcePath = resourceFile.name;
                     if (path.length) {
-                        targetPath = path.join('/') + '/' + targetPath;
+                        resourcePath = path.join('/') + '/' + resourcePath;
                     }
                     taskCollection.tasks.push({
-                        taskName: targetFile.name,
+                        taskName: resourceFile.name,
                         task: {
                             projectName: metadata.project.name,
-                            targetPath: targetPath
+                            resourcePath: resourcePath
                         }
                     });
                 } else {
-                    targetDirectories.push(targetFile);
+                    metaDirectories.push(resourceFile);
                 }
             });
             if (taskCollection.tasks.length) {
                 this.addTaskCollection(taskCollection);
             }
-            targetDirectories.forEach((dir) => {
+            metaDirectories.forEach((dir) => {
                 if (!this.skipDirectories || this.skipDirectories.indexOf(dir.name) === -1) {
                     this.scanDirectory(metadata, basePath, [...path, dir.name]);
                 }

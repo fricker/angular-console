@@ -1,5 +1,5 @@
 
-export class EntityConfig {
+export class ResourceConfig {
     projectType: string;
     projectName: string;
     path: string;

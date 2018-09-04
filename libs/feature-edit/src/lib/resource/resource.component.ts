@@ -30,17 +30,17 @@ import {
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import {ProjectMetadataService} from '../project/metadata/project-metadata.service';
-import {EntityConfig} from './entity-config';
+import {ResourceConfig} from './resource-config';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'mbd-entity',
-  templateUrl: './entity.component.html',
-  styleUrls: ['./entity.component.css']
+  selector: 'mbd-resource',
+  templateUrl: './resource.component.html',
+  styleUrls: ['./resource.component.css']
 })
-export class EntityComponent implements OnInit {
+export class ResourceComponent implements OnInit {
 
-  configuration$: Observable<EntityConfig>;
+  configuration$: Observable<ResourceConfig>;
   commandArray$ = new BehaviorSubject<{ commands: string[]; valid: boolean }>({
     commands: [],
     valid: true
@@ -64,18 +64,18 @@ export class EntityComponent implements OnInit {
 
   ngOnInit() {
 
-    const targetParams$ = this.route.params.pipe(
+    const resourceParams$ = this.route.params.pipe(
       map(params => {
-        if (!params.project || !params.target) return null;
+        if (!params.project || !params.resource) return null;
         return {
           workspacePath: params.path,
           projectName: decodeURIComponent(params.project),
-          targetPath: decodeURIComponent(params.target)
+          resourcePath: decodeURIComponent(params.resource)
         };
       })
     );
 
-    this.configuration$ = targetParams$.pipe(
+    this.configuration$ = resourceParams$.pipe(
       switchMap(params => {
         console.log('EntityComponent.ngOnInit - params', params); // TESTING
         if (!params) {
@@ -83,8 +83,8 @@ export class EntityComponent implements OnInit {
         }
         return this.apollo.query({
           query: gql`
-            query($workspacePath: String!, $projectName: String!, $targetPath: String!) {
-              metadata(workspace: $workspacePath, project: $projectName, path: $targetPath) {
+            query($workspacePath: String!, $projectName: String!, $resourcePath: String!) {
+              metadata(workspace: $workspacePath, project: $projectName, path: $resourcePath) {
                 projectType,
                 projectName,
                 path,
@@ -104,9 +104,9 @@ export class EntityComponent implements OnInit {
           content: JSON.parse(metadata.content)
         }
       }),
-      tap((entityConfig: EntityConfig) => {
-        console.log('EntityComponent.ngOnInit - entityConfig', entityConfig); // TESTING
-        const contextTitle = entityConfig.projectName;
+      tap((resourceConfig: ResourceConfig) => {
+        console.log('EntityComponent.ngOnInit - resourceConfig', resourceConfig); // TESTING
+        const contextTitle = resourceConfig.projectName;
         this.contextActionService.contextualActions$.next({
           contextTitle,
           actions: [

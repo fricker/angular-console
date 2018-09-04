@@ -1,10 +1,10 @@
 
-<mbd-editor *ngIf="configuration$ | async as entityConfig"
+<mbd-editor *ngIf="configuration$ | async as resourceConfig"
   terminalWindowTitle="Command output">
   <mbd-content
-    [entityConfig]="entityConfig"
+    [resourceConfig]="resourceConfig"
     [configurations]="[]"
-    [prefix]="[entityConfig.projectName, entityConfig.path]"
+    [prefix]="[resourceConfig.projectName, resourceConfig.path]"
     [fields]="[]"
     (value)="onFlagsChange($event)"
     (action)="onRun()"

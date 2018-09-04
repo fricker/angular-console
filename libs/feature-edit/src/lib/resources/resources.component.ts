@@ -15,15 +15,15 @@ import {
 } from 'rxjs/operators';
 import { ProjectMetadata } from '../project/metadata/project-metadata';
 import { ProjectMetadataService } from '../project/metadata/project-metadata.service';
-import { EntityTasks, EntityTarget } from '../entity/tasks/entity-tasks';
+import { ResourceTasks, ResourceTarget } from '../resource/tasks/resource-tasks';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'mbd-entities',
-  templateUrl: './entities.component.html',
-  styleUrls: ['./entities.component.scss']
+  selector: 'mbd-resources',
+  templateUrl: './resources.component.html',
+  styleUrls: ['./resources.component.scss']
 })
-export class EntitiesComponent implements OnInit, OnDestroy {
+export class ResourcesComponent implements OnInit, OnDestroy {
 
   private readonly projects$: Observable<Array<Project>> = this.route.params.pipe(
     map(m => m.path),
@@ -51,7 +51,7 @@ export class EntitiesComponent implements OnInit, OnDestroy {
     })
   );
 
-  private readonly selectedTargetId$: Observable<EntityTarget> = this.router.events.pipe(
+  private readonly selectedResourceId$: Observable<ResourceTarget> = this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),
     startWith(null),
     map(() => {
@@ -59,31 +59,31 @@ export class EntitiesComponent implements OnInit, OnDestroy {
       if (firstChild) {
         return {
           projectName: decodeURIComponent(firstChild.params.project),
-          targetPath: decodeURIComponent(firstChild.params.target)
+          resourcePath: decodeURIComponent(firstChild.params.resource)
         };
       }
       return {
         projectName: '',
-        targetPath: ''
+        resourcePath: ''
       };
     }),
     distinctUntilChanged(
-      (a: EntityTarget, b: EntityTarget) =>
-        a.projectName === b.projectName && a.targetPath === b.targetPath
+      (a: ResourceTarget, b: ResourceTarget) =>
+        a.projectName === b.projectName && a.resourcePath === b.resourcePath
     )
   );
 
-  private entityTasksSubject = new ReplaySubject<TaskCollections<EntityTarget>>(1);
-  readonly projectTasks$ = this.entityTasksSubject.asObservable();
+  private resourceTasksSubject = new ReplaySubject<TaskCollections<ResourceTarget>>(1);
+  readonly resourceTasks$ = this.resourceTasksSubject.asObservable();
 
-  readonly workspaceProjects$: Observable<EntityTasks<ProjectMetadata>> =
-    combineLatest(this.projects$, this.selectedTargetId$).pipe(
-      map(([projects, target]) => {
+  readonly workspaceProjects$: Observable<ResourceTasks<ProjectMetadata>> =
+    combineLatest(this.projects$, this.selectedResourceId$).pipe(
+      map(([projects, resource]) => {
         const metadataArray: Array<ProjectMetadata> = projects.map(
           project => new ProjectMetadata(project, this.finder)
         );
-        console.log('workspaceProjects$ - target', target);
-        return new EntityTasks<ProjectMetadata>(this.route.snapshot.params.path, metadataArray, target, ['templates']);
+        console.log('workspaceProjects$ - resource', resource);
+        return new ResourceTasks<ProjectMetadata>(this.route.snapshot.params.path, metadataArray, resource, ['templates']);
       })
     );
 
@@ -98,8 +98,8 @@ export class EntitiesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.projectsub = this.workspaceProjects$.subscribe((entityProjects) => {
-      entityProjects.entityTasksSubject = this.entityTasksSubject;
+    this.projectsub = this.workspaceProjects$.subscribe((projects) => {
+      projects.tasksSubject = this.resourceTasksSubject;
     });
   }
 
@@ -109,12 +109,12 @@ export class EntitiesComponent implements OnInit, OnDestroy {
     }
   }
 
-  navigateToSelectedTarget(target: EntityTarget | null) {
-    if (target) {
+  navigateToSelectedResource(resourceTarget: ResourceTarget | null) {
+    if (resourceTarget) {
       this.router.navigate(
         [
-          encodeURIComponent(target.projectName),
-          encodeURIComponent(target.targetPath)
+          encodeURIComponent(resourceTarget.projectName),
+          encodeURIComponent(resourceTarget.resourcePath)
         ],
         { relativeTo: this.route }
       );
