@@ -40,10 +40,10 @@ interface FieldGrouping {
 const DEBOUNCE_TIME = 300;
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'mbd-content',
   templateUrl: './content.component.html',
   styleUrls: ['./content.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   animations: [
     trigger('fadeInOut', [
@@ -231,13 +231,12 @@ export class ContentComponent {
     this.subscription = this.formGroup.valueChanges
       .pipe(startWith(this.formGroup.value))
       .subscribe(value => {
-        console.log('changes', value);
+        console.log('ContentComponent.valueChanges', value);
         this.emitNext(value);
       });
   }
 
   private emitNext(value: { [p: string]: any }) {
-    console.log('ContentComponent.emitNext', value);
     const configuration =
       this.configurations && value.configurations
         ? [`--configuration=${value.configurations}`]
@@ -264,5 +263,9 @@ export class ContentComponent {
     (this.formGroup.get(name) as FormControl).setValue(value, {
       emitEvent: true
     });
+  }
+
+  handleCommand(command: any) {
+    console.log('ContentComponent.handleCommand', command); // TESTING
   }
 }

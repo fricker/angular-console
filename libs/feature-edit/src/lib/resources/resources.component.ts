@@ -15,7 +15,7 @@ import {
 } from 'rxjs/operators';
 import { ProjectMetadata } from '../project/metadata/project-metadata';
 import { ProjectMetadataService } from '../project/metadata/project-metadata.service';
-import { ResourceTasks, ResourceTarget } from '../resource/tasks/resource-tasks';
+import { ResourceTasks, ResourceTarget } from '../resource/resource-tasks';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,11 +47,11 @@ export class ResourcesComponent implements OnInit, OnDestroy {
       }).valueChanges;
     }),
     map(r => {
-      return [...(r as any).data.workspace.projects];
+      return [...((r as any).data.workspace.projects)];
     })
   );
 
-  private readonly selectedResourceId$: Observable<ResourceTarget> = this.router.events.pipe(
+  private readonly selectedResource$: Observable<ResourceTarget> = this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),
     startWith(null),
     map(() => {
@@ -77,12 +77,11 @@ export class ResourcesComponent implements OnInit, OnDestroy {
   readonly resourceTasks$ = this.resourceTasksSubject.asObservable();
 
   readonly workspaceProjects$: Observable<ResourceTasks<ProjectMetadata>> =
-    combineLatest(this.projects$, this.selectedResourceId$).pipe(
+    combineLatest(this.projects$, this.selectedResource$).pipe(
       map(([projects, resource]) => {
         const metadataArray: Array<ProjectMetadata> = projects.map(
           project => new ProjectMetadata(project, this.finder)
         );
-        console.log('workspaceProjects$ - resource', resource);
         return new ResourceTasks<ProjectMetadata>(this.route.snapshot.params.path, metadataArray, resource, ['templates']);
       })
     );
@@ -98,8 +97,8 @@ export class ResourcesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.projectsub = this.workspaceProjects$.subscribe((projects) => {
-      projects.tasksSubject = this.resourceTasksSubject;
+    this.projectsub = this.workspaceProjects$.subscribe((resourceTasks) => {
+      resourceTasks.tasksSubject = this.resourceTasksSubject;
     });
   }
 
@@ -109,7 +108,7 @@ export class ResourcesComponent implements OnInit, OnDestroy {
     }
   }
 
-  navigateToSelectedResource(resourceTarget: ResourceTarget | null) {
+  navigateToResource(resourceTarget: ResourceTarget | null) {
     if (resourceTarget) {
       this.router.navigate(
         [

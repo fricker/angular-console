@@ -77,7 +77,6 @@ export class ResourceComponent implements OnInit {
 
     this.configuration$ = resourceParams$.pipe(
       switchMap(params => {
-        console.log('EntityComponent.ngOnInit - params', params); // TESTING
         if (!params) {
           return of();
         }
@@ -101,11 +100,11 @@ export class ResourceComponent implements OnInit {
           projectType: metadata.projectType,
           projectName: metadata.projectName,
           path: metadata.path,
+          contentType: this.getContentType(metadata.path, metadata.content),
           content: JSON.parse(metadata.content)
         }
       }),
       tap((resourceConfig: ResourceConfig) => {
-        console.log('EntityComponent.ngOnInit - resourceConfig', resourceConfig); // TESTING
         const contextTitle = resourceConfig.projectName;
         this.contextActionService.contextualActions$.next({
           contextTitle,
@@ -159,16 +158,34 @@ export class ResourceComponent implements OnInit {
   }
 
   onRun() {
-    console.log('onRun');
+    console.log('ResourceComponent.onRun');
+    // this.ngRun$.next();
   }
 
   onStop() {
-    console.log('onStop');
+    console.log('ResourceComponent.onStop');
+    // this.runner.stopCommand();
   }
 
   onFlagsChange(e: { commands: string[]; valid: boolean }) {
-    console.log('onFlagsChange', e);
+    console.log('ResourceComponent.onFlagsChange', e);
     setTimeout(() => this.commandArray$.next(e), 0);
     this.ngRunDisabled$.next(!e.valid);
+  }
+
+  protected getContentType(resourcePath: string, content: any): string {
+    const lastSlashIndex = resourcePath.lastIndexOf('/');
+    const lastDotIndex = resourcePath.lastIndexOf('.');
+    let fileName: string;
+    if (lastSlashIndex === -1) {
+      fileName = lastDotIndex === -1 ?
+                 resourcePath :
+                 resourcePath.substring(0, lastDotIndex);
+    } else {
+      fileName = lastDotIndex === -1 ?
+                 resourcePath.substring(lastSlashIndex + 1) :
+                 resourcePath.substring(lastSlashIndex + 1, lastDotIndex);
+    }
+    return 'mbd/' + fileName;
   }
 }

@@ -191,7 +191,7 @@ export class TargetsComponent {
           task.targetName === target.targetName
       );
 
-    return selectedTask || null;
+      return selectedTask || null;
   }
 }
 

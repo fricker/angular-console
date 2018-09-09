@@ -74,8 +74,8 @@ export const workspaceRoutes: Route[] = [
         children: runRoutes
       },
       {
-        data: { state: 'metadata' },
-        path: 'metadata',
+        data: { state: 'meta' },
+        path: 'meta',
         children: editRoutes
       },
       { path: '', pathMatch: 'full', redirectTo: 'projects' }

@@ -1,8 +1,8 @@
 
 import { Subject } from 'rxjs';
 import { LocalFile } from '@angular-console/schema';
-import { TaskCollection, TaskCollections } from '@angular-console/ui';
-import { ProjectMetadata } from '../../project/metadata/project-metadata';
+import { Task, TaskCollection, TaskCollections } from '@angular-console/ui';
+import { ProjectMetadata } from '../project/metadata/project-metadata';
 
 export interface ResourceTarget {
     projectName: string;
@@ -22,14 +22,6 @@ export class ResourceTasks<PM extends ProjectMetadata> {
         this.tasksCollectionsSubject = tasksSubject;
         this.projectMetadata.forEach((metadata) => {
             this.scanMetadata(metadata);
-        });
-    }
-
-    protected addTaskCollection(taskCollection: TaskCollection<ResourceTarget>) {
-        this.tasksCollections = this.tasksCollections ? [...this.tasksCollections, taskCollection] : [taskCollection];
-        this.tasksCollectionsSubject.next({
-            taskCollections: this.tasksCollections,
-            selectedTask: null
         });
     }
 
@@ -82,5 +74,28 @@ export class ResourceTasks<PM extends ProjectMetadata> {
                 }
             });
         });
+    }
+
+    protected addTaskCollection(taskCollection: TaskCollection<ResourceTarget>) {
+        this.tasksCollections = this.tasksCollections ? [...this.tasksCollections, taskCollection] : [taskCollection];
+        this.tasksCollectionsSubject.next({
+            taskCollections: this.tasksCollections,
+            selectedTask: this.getSelectedTask()
+        });
+    }
+
+    private getSelectedTask(): Task<ResourceTarget> | null {
+        if (!this.resourceTarget.projectName || !this.resourceTarget.resourcePath) {
+          return null;
+        }
+        const selectedTask = this.tasksCollections.reduce(
+            (tasks, collection) => [...tasks, ...collection.tasks],
+            [] as Array<Task<ResourceTarget>>
+          ).find(
+            ({ task }) =>
+              task.projectName === this.resourceTarget.projectName &&
+              task.resourcePath === this.resourceTarget.resourcePath
+          );
+        return selectedTask || null;
     }
 }
