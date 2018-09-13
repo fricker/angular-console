@@ -1,12 +1,18 @@
 
 import { Subject } from 'rxjs';
+
 import { LocalFile } from '@angular-console/schema';
 import { Task, TaskCollection, TaskCollections } from '@angular-console/ui';
 import { ProjectMetadata } from '../project/metadata/project-metadata';
 
+export const PLATFORMS = ['web', 'mobile', 'vr'];
+
+export type PlatformType = 'web' | 'mobile' | 'vr';
+
 export interface ResourceTarget {
     projectName: string;
     resourcePath: string;
+    platformType?: PlatformType;
 }
 
 export class ResourceTasks<PM extends ProjectMetadata> {
@@ -78,6 +84,8 @@ export class ResourceTasks<PM extends ProjectMetadata> {
 
     protected addTaskCollection(taskCollection: TaskCollection<ResourceTarget>) {
         this.tasksCollections = this.tasksCollections ? [...this.tasksCollections, taskCollection] : [taskCollection];
+        const selectedTask = this.getSelectedTask();
+        console.log('*** ResourceTasks.addTaskCollection - selectedTask', selectedTask); // TESTING
         this.tasksCollectionsSubject.next({
             taskCollections: this.tasksCollections,
             selectedTask: this.getSelectedTask()

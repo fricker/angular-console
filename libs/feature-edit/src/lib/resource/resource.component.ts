@@ -83,7 +83,7 @@ export class ResourceComponent implements OnInit {
         return this.apollo.query({
           query: gql`
             query($workspacePath: String!, $projectName: String!, $resourcePath: String!) {
-              metadata(workspace: $workspacePath, project: $projectName, path: $resourcePath) {
+              resource(workspace: $workspacePath, project: $projectName, path: $resourcePath) {
                 projectType,
                 projectName,
                 path,
@@ -95,13 +95,13 @@ export class ResourceComponent implements OnInit {
         });
       }),
       map((response: any) => {
-        const metadata = response.data.metadata;
+        const resource = response.data.resource;
         return {
-          projectType: metadata.projectType,
-          projectName: metadata.projectName,
-          path: metadata.path,
-          contentType: this.getContentType(metadata.path, metadata.content),
-          content: JSON.parse(metadata.content)
+          projectType: resource.projectType,
+          projectName: resource.projectName,
+          path: resource.path,
+          contentType: this.getContentType(resource.path, resource.content),
+          content: JSON.parse(resource.content)
         }
       }),
       tap((resourceConfig: ResourceConfig) => {

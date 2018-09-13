@@ -17,6 +17,7 @@ import { schematicCollectionsForNgNew } from './read-ngnews';
 import { openInEditor, readEditors } from './read-editors';
 import { readNpmScripts, readNpmScriptSchema } from './read-npm-scripts';
 import { readDirectory } from './read-directory';
+import { readMetaProjects } from './read-meta-projects';
 import {
   completeFiles,
   completeLocalModules,
@@ -522,9 +523,65 @@ export const filesType: graphql.GraphQLObjectType = new graphql.GraphQLObjectTyp
   }
 );
 
+export const metaProjectType: graphql.GraphQLObjectType = new graphql.GraphQLObjectType(
+  {
+    name: 'MetaProject',
+    fields: () => {
+      return {
+        name: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        root: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        projectType: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        architect: {
+          type: new graphql.GraphQLList(architectType),
+          args: {
+            name: { type: graphql.GraphQLString }
+          },
+          resolve: (project: any, args: any) => {
+            return filterByName(project.architect, args);
+          }
+        },
+        platformType: {
+          type: graphql.GraphQLString
+        },
+        meta: {
+          type: new graphql.GraphQLList(graphql.GraphQLString),
+        }
+      };
+    }
+  }
+);
+
 export const metadataType: graphql.GraphQLObjectType = new graphql.GraphQLObjectType(
   {
     name: 'Metadata',
+    fields: () => {
+      return {
+        path: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        projects: {
+          type: new graphql.GraphQLList(metaProjectType),
+          args: {
+            name: { type: graphql.GraphQLString }
+          },
+          resolve: (workspace: any, args: any) => {
+            return filterByName(workspace.projects, args);
+          }
+        }
+      };
+    }
+  }
+);
+
+export const resourceType: graphql.GraphQLObjectType = new graphql.GraphQLObjectType(
+  {
+    name: 'Resource',
     fields: () => {
       return {
         projectType: {
@@ -673,6 +730,27 @@ export const queryType: graphql.GraphQLObjectType = new graphql.GraphQLObjectTyp
         metadata: {
           type: new graphql.GraphQLNonNull(metadataType),
           args: {
+            path: { type: new graphql.GraphQLNonNull(graphql.GraphQLString) }
+          },
+          resolve: (_root, args: any) => {
+            try {
+              const angularJson = readJsonFile('./angular.json', args.path).json;
+              const projects = readMetaProjects(args.path, angularJson.projects);
+              return {
+                path: args.path,
+                projects: projects,
+              };
+            } catch (e) {
+              console.log(e);
+              throw new Error(
+                `Error when reading project metadata. Message: "${e.message}"`
+              );
+            }
+          }
+        },
+        resource: {
+          type: new graphql.GraphQLNonNull(resourceType),
+          args: {
             workspace: { type: graphql.GraphQLString },
             project: { type: graphql.GraphQLString },
             path: { type: graphql.GraphQLString }
@@ -693,9 +771,9 @@ export const queryType: graphql.GraphQLObjectType = new graphql.GraphQLObjectTyp
                 content: content
               };
             } catch (e) {
-              console.log('Metadata request failure', e);
+              console.log('resource request failure', e);
               throw new Error(
-                `Error when requesting metadata "${args.path}". Message: "${
+                `Error when requesting resource "${args.path}". Message: "${
                   e.message
                 }"`
               );

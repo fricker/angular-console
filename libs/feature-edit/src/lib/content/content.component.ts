@@ -265,6 +265,7 @@ export class ContentComponent {
     });
   }
 
+  // PLACEHOLDER
   handleCommand(command: any) {
     console.log('ContentComponent.handleCommand', command); // TESTING
   }
