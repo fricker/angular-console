@@ -10,10 +10,10 @@ import {
 import { Route, RouterModule } from '@angular/router';
 import { UiModule } from '@angular-console/ui';
 
-import { ProjectMetadataService } from './project/metadata/project-metadata.service';
-import { ResourceMetadataService } from './resource/metadata/resource-metadata.service';
-import { ResourceComponent } from './resource/resource.component';
+import { MetadataService } from './resources/metadata.service';
+import { ResourceService } from './resource/resource.service';
 import { ResourcesComponent } from './resources/resources.component';
+import { ResourceComponent } from './resource/resource.component';
 import { EditorComponent } from './editor/editor.component';
 import { ContentModule } from './content/content.module';
 
@@ -40,7 +40,7 @@ export const editRoutes: Route[] = [
     UiModule,
     ContentModule
   ],
-  providers: [ProjectMetadataService, ResourceMetadataService],
+  providers: [MetadataService, ResourceService],
   declarations: [ResourcesComponent, ResourceComponent, EditorComponent]
 })
 export class FeatureEditModule {}

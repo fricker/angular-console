@@ -4,8 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import {
   Observable,
   Subject,
-  BehaviorSubject,
-  of
+  BehaviorSubject
 } from 'rxjs';
 import {
   map,
@@ -18,7 +17,6 @@ import {
 
 import {
   ContextualActionBarService,
-  // FlagsComponent,
   TaskRunnerComponent,
   TerminalComponent
 } from '@angular-console/ui';
@@ -27,10 +25,9 @@ import {
   CommandRunner,
   Serializer
 } from '@angular-console/utils';
-import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
-import {ProjectMetadataService} from '../project/metadata/project-metadata.service';
 import {ResourceConfig} from './resource-config';
+import {ResourceService} from './resource.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,78 +46,36 @@ export class ResourceComponent implements OnInit {
   commandOutput$: Observable<CommandOutput>;
   @ViewChild(TerminalComponent) out: TerminalComponent;
   @ViewChild(TaskRunnerComponent) taskRunner: TaskRunnerComponent;
-  // @ViewChild(FlagsComponent) flags: FlagsComponent;
   private readonly ngRun$ = new Subject<any>();
   private readonly ngRunDisabled$ = new BehaviorSubject(true);
 
   constructor(
-    private readonly apollo: Apollo,
     private readonly route: ActivatedRoute,
     private readonly runner: CommandRunner,
     private readonly serializer: Serializer,
     private readonly contextActionService: ContextualActionBarService,
-    private readonly metadataService: ProjectMetadataService
+    private readonly resourceService: ResourceService
   ) {}
 
   ngOnInit() {
 
-    const resourceParams$ = this.route.params.pipe(
-      map(params => {
-        if (!params.project || !params.resource) return null;
-        return {
-          workspacePath: params.path,
-          projectName: decodeURIComponent(params.project),
-          resourcePath: decodeURIComponent(params.resource)
-        };
-      })
-    );
+    const tapConfig = (resourceConfig: ResourceConfig) => {
+      const contextTitle = resourceConfig.projectName;
+      this.contextActionService.contextualActions$.next({
+        contextTitle,
+        actions: [
+          {
+            invoke: this.ngRun$,
+            disabled: this.ngRunDisabled$,
+            name: 'Run'
+          }
+        ]
+      });
+    };
 
-    this.configuration$ = resourceParams$.pipe(
-      switchMap(params => {
-        if (!params) {
-          return of();
-        }
-        return this.apollo.query({
-          query: gql`
-            query($workspacePath: String!, $projectName: String!, $resourcePath: String!) {
-              resource(workspace: $workspacePath, project: $projectName, path: $resourcePath) {
-                projectType,
-                projectName,
-                path,
-                content
-              }
-            }
-          `,
-          variables: params
-        });
-      }),
-      map((response: any) => {
-        const resource = response.data.resource;
-        return {
-          projectType: resource.projectType,
-          projectName: resource.projectName,
-          path: resource.path,
-          contentType: this.getContentType(resource.path, resource.content),
-          content: JSON.parse(resource.content)
-        }
-      }),
-      tap((resourceConfig: ResourceConfig) => {
-        const contextTitle = resourceConfig.projectName;
-        this.contextActionService.contextualActions$.next({
-          contextTitle,
-          actions: [
-            {
-              invoke: this.ngRun$,
-              disabled: this.ngRunDisabled$,
-              name: 'Run'
-            }
-          ]
-        });
-      }),
-      publishReplay(1),
-      refCount()
-    );
+    this.configuration$ = this.resourceService.getConfiguration(this.route, tapConfig);
 
+    // TODO: Incorporate into CommandService
     this.commandOutput$ = this.ngRun$.pipe(
       withLatestFrom(this.commandArray$),
       tap(() => {
@@ -171,21 +126,5 @@ export class ResourceComponent implements OnInit {
     console.log('ResourceComponent.onFlagsChange', e);
     setTimeout(() => this.commandArray$.next(e), 0);
     this.ngRunDisabled$.next(!e.valid);
-  }
-
-  protected getContentType(resourcePath: string, content: any): string {
-    const lastSlashIndex = resourcePath.lastIndexOf('/');
-    const lastDotIndex = resourcePath.lastIndexOf('.');
-    let fileName: string;
-    if (lastSlashIndex === -1) {
-      fileName = lastDotIndex === -1 ?
-                 resourcePath :
-                 resourcePath.substring(0, lastDotIndex);
-    } else {
-      fileName = lastDotIndex === -1 ?
-                 resourcePath.substring(lastSlashIndex + 1) :
-                 resourcePath.substring(lastSlashIndex + 1, lastDotIndex);
-    }
-    return 'mbd/' + fileName;
   }
 }
