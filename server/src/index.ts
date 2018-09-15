@@ -17,7 +17,8 @@ import { schematicCollectionsForNgNew } from './read-ngnews';
 import { openInEditor, readEditors } from './read-editors';
 import { readNpmScripts, readNpmScriptSchema } from './read-npm-scripts';
 import { readDirectory } from './read-directory';
-import { readMetaProjects } from './read-meta-projects';
+import { readMetaProjects } from './read-metadata';
+import { readResourceContent, readResourceContext } from './read-resource';
 import {
   completeFiles,
   completeLocalModules,
@@ -595,6 +596,9 @@ export const resourceType: graphql.GraphQLObjectType = new graphql.GraphQLObject
         },
         content: {
           type: new graphql.GraphQLNonNull(graphql.GraphQLString)
+        },
+        context: {
+          type: new graphql.GraphQLNonNull(graphql.GraphQLString)
         }
       };
     }
@@ -762,13 +766,14 @@ export const queryType: graphql.GraphQLObjectType = new graphql.GraphQLObjectTyp
               if (!project) {
                 throw new Error('project ' + args.project + ' not found');
               }
-              const contentPath = args.workspace + '/' + project.sourceRoot + '/meta/' + args.path;
-              const content = readFileSync(contentPath).toString();
+              const content = readResourceContent(project, args.workspace, args.path);
+              const context = readResourceContext(project, args.workspace, args.path);
               return {
                 projectType: project.projectType,
                 projectName: args.project,
                 path: args.path,
-                content: content
+                content: content,
+                context: context
               };
             } catch (e) {
               console.log('resource request failure', e);

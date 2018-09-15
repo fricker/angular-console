@@ -22,15 +22,12 @@ export class ResourcesComponent {
   resourceTasks$: Observable<TaskCollections<ResourceTarget>>;
 
   constructor(
-    private readonly route: ActivatedRoute,
-    private readonly  metadataService: MetadataService
+    route: ActivatedRoute,
+    readonly metadataService: MetadataService
   ) {
-    const projects$ = metadataService.getProjects(this.route);
-    const selectedResource$ = metadataService.getSelectedResource(this.route);
+    metadataService.currentRoute = route;
+    const projects$ = metadataService.getProjects();
+    const selectedResource$ = metadataService.getSelectedResource();
     this.resourceTasks$ = metadataService.getResourceTasks(projects$, selectedResource$);
-  }
-
-  navigateToResource(resourceTarget: ResourceTarget | null) {
-    this.metadataService.navigateToResource(this.route, resourceTarget);
   }
 }

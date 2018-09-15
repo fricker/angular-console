@@ -80,7 +80,6 @@ export class TargetsComponent {
     filter(event => event instanceof NavigationEnd),
     startWith(null),
     map(() => {
-      console.log('*** TargetsComponent.selectedTargetId$ - route.snapshot', this.route.snapshot); // TESTING
       const firstChild = this.route.snapshot.firstChild;
       if (firstChild) {
         if (firstChild.params.script) {
@@ -102,7 +101,6 @@ export class TargetsComponent {
     }),
     distinctUntilChanged(
       (a: Target, b: Target) => {
-        console.log('*** TargetsComponent.distinctUntilChanged', a.projectName === b.projectName && a.targetName === b.targetName); // TESTING
         return a.projectName === b.projectName && a.targetName === b.targetName;
       }
     )
@@ -143,7 +141,6 @@ export class TargetsComponent {
       );
 
       const selectedTask = this.getSelectedTask(collections, target);
-      console.log('*** TargetsComponent.taskCollections$ - selectedTask'); // TESTING
       const taskCollections: TaskCollections<Target> = {
         selectedTask: selectedTask,
         taskCollections: collections
@@ -160,7 +157,6 @@ export class TargetsComponent {
   ) {}
 
   navigateToSelectedTarget(target: Target | null) {
-    console.log('*** TargetsComponent.navigateToSelectedTarget', target); // TESTING
     if (target && isNpmScript(target)) {
       this.router.navigate(['script', encodeURIComponent(target.targetName)], {
         relativeTo: this.route

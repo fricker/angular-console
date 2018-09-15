@@ -30,6 +30,7 @@ import {
   switchMap
 } from 'rxjs/operators';
 import {ResourceConfig} from '../resource/resource-config';
+import {ResourceTarget, MetadataService} from '../resources/metadata.service';
 
 interface FieldGrouping {
   type: 'important' | 'optional';
@@ -88,7 +89,8 @@ export class ContentComponent {
   constructor(
     private readonly serializer: Serializer,
     private readonly elementRef: ElementRef,
-    private readonly completions: Completions
+    private readonly completions: Completions,
+    private readonly metadataService: MetadataService
   ) {}
 
   hideFields() {
@@ -231,7 +233,6 @@ export class ContentComponent {
     this.subscription = this.formGroup.valueChanges
       .pipe(startWith(this.formGroup.value))
       .subscribe(value => {
-        console.log('ContentComponent.valueChanges', value);
         this.emitNext(value);
       });
   }
@@ -267,6 +268,17 @@ export class ContentComponent {
 
   // PLACEHOLDER
   handleCommand(command: any) {
-    console.log('ContentComponent.handleCommand', command); // TESTING
+    console.log('ContentComponent.handleCommand', command.detail); // TESTING
+    if (command.detail.name === 'navigateTo') {
+      const resourceTarget: ResourceTarget = {
+        projectName: command.detail.projectName,
+        resourcePath: command.detail.resourcePath
+      };
+      if (command.detail.platformType) {
+        resourceTarget.platformType = command.detail.platformType;
+      }
+      this.metadataService.navigateToResource(resourceTarget);
+      return;
+    }
   }
 }

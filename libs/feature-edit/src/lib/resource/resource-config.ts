@@ -5,4 +5,5 @@ export class ResourceConfig {
     path: string;
     contentType: string;
     content: any;
+    context: any;
 }

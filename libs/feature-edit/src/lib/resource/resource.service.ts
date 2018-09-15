@@ -38,7 +38,8 @@ export class ResourceService {
                 projectType,
                 projectName,
                 path,
-                content
+                content,
+                context
               }
             }
           `,
@@ -47,12 +48,14 @@ export class ResourceService {
       }),
       map((response: any) => {
         const resource = response.data.resource;
+        const context = JSON.parse(resource.context);
         return {
           projectType: resource.projectType,
           projectName: resource.projectName,
           path: resource.path,
-          contentType: this.getContentType(resource.path, resource.content),
-          content: JSON.parse(resource.content)
+          contentType: this.getContentType(resource.path, context),
+          content: JSON.parse(resource.content),
+          context: context
         }
       }),
       tap(tapConfig),
@@ -61,7 +64,7 @@ export class ResourceService {
     );
   }
 
-  protected getContentType(resourcePath: string, content: any): string {
+  protected getContentType(resourcePath: string, context: any): string {
     const lastSlashIndex = resourcePath.lastIndexOf('/');
     const lastDotIndex = resourcePath.lastIndexOf('.');
     let fileName: string;

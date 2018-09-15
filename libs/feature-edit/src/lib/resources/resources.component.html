@@ -1,6 +1,6 @@
 <ui-task-selector
   [taskCollections$]="resourceTasks$"
   [filterPlaceholder]="'Filter metadata'"
-  (selectionChange)="navigateToResource($event)">
+  (selectionChange)="metadataService.navigateToResource($event)">
   <router-outlet></router-outlet>
 </ui-task-selector>

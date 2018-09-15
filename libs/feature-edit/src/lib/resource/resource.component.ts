@@ -123,7 +123,6 @@ export class ResourceComponent implements OnInit {
   }
 
   onFlagsChange(e: { commands: string[]; valid: boolean }) {
-    console.log('ResourceComponent.onFlagsChange', e);
     setTimeout(() => this.commandArray$.next(e), 0);
     this.ngRunDisabled$.next(!e.valid);
   }

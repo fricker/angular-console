@@ -27,13 +27,18 @@ export interface ResourceTarget {
 @Injectable()
 export class MetadataService {
 
+  currentRoute: ActivatedRoute;
+
   constructor(
     private readonly apollo: Apollo,
     private readonly router: Router
   ) {}
 
-  getProjects(route: ActivatedRoute): Observable<Array<MetaProject>> {
-    return route.params.pipe(
+  getProjects(): Observable<Array<MetaProject>> {
+    if (!this.currentRoute) {
+      throw new Error('currentRoute not set on MetadataService');
+    }
+    return this.currentRoute.params.pipe(
       map(m => m.path),
       switchMap(path => {
         return this.apollo.watchQuery({
@@ -62,13 +67,15 @@ export class MetadataService {
     );
   }
 
-  getSelectedResource(route: ActivatedRoute): Observable<ResourceTarget> {
+  getSelectedResource(): Observable<ResourceTarget> {
+    if (!this.currentRoute) {
+      throw new Error('currentRoute not set on MetadataService');
+    }
     return this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       startWith(null),
       map(() => {
-        console.log('*** MetadataService.selectedResource$ - route.snapshot', route.snapshot); // TESTING
-        const firstChild = route.snapshot.firstChild;
+        const firstChild = this.currentRoute.snapshot.firstChild;
         if (firstChild) {
           const projectName = decodeURIComponent(firstChild.params.project);
           const resourcePath = decodeURIComponent(firstChild.params.resource);
@@ -94,10 +101,6 @@ export class MetadataService {
       }),
       distinctUntilChanged(
         (a: ResourceTarget, b: ResourceTarget) => {
-          console.log('*** ResourcesComponent.distinctUntilChanged',
-            a.projectName === b.projectName &&
-            a.resourcePath === b.resourcePath &&
-            a.platformType === b.platformType); // TESTING
           return a.projectName === b.projectName &&
                  a.resourcePath === b.resourcePath &&
                  a.platformType === b.platformType;
@@ -133,7 +136,6 @@ export class MetadataService {
           return collection;
         });
         const selectedTask = this.getSelectedTask(collections, target);
-        console.log('*** ResourcesComponent.resourceTasks$ - selectedTask', selectedTask); // TESTING
         const taskCollections: TaskCollections<ResourceTarget> = {
           selectedTask: selectedTask,
           taskCollections: collections
@@ -143,8 +145,10 @@ export class MetadataService {
     );
   }
 
-  navigateToResource(route: ActivatedRoute, resourceTarget: ResourceTarget | null) {
-    console.log('*** ResourcesComponent.navigateToResource', resourceTarget); // TESTING
+  navigateToResource(resourceTarget: ResourceTarget | null) {
+    if (!this.currentRoute) {
+      throw new Error('currentRoute not set on MetadataService');
+    }
     if (resourceTarget) {
       const resourcePath = resourceTarget.platformType ? resourceTarget.platformType + '/' + resourceTarget.resourcePath : resourceTarget.resourcePath;
       this.router.navigate(
@@ -152,10 +156,10 @@ export class MetadataService {
           encodeURIComponent(resourceTarget.projectName),
           encodeURIComponent(resourcePath)
         ],
-        { relativeTo: route }
+        { relativeTo: this.currentRoute }
       );
     } else {
-      this.router.navigate(['.'], { relativeTo: route });
+      this.router.navigate(['.'], { relativeTo: this.currentRoute });
     }
   }
 
@@ -174,79 +178,4 @@ export class MetadataService {
     );
     return selectedTask || null;
   }
-/*
-    private activatedRoute: ActivatedRoute;
-
-    constructor(
-        private readonly apollo: Apollo,
-        private readonly router: Router,
-        private readonly finder: Finder
-      ) {}
-
-    prepare(activatedRoute: ActivatedRoute): Observable<Array<Project>> {
-      console.log('ProjectMetadataService.prepare', activatedRoute); // TESTING
-        this.activatedRoute = activatedRoute;
-        return activatedRoute.params.pipe(
-            map(m => m.path),
-            switchMap(path => {
-              return this.apollo.watchQuery({
-                pollInterval: 5000,
-                query: gql`
-                  query($path: String!) {
-                    workspace(path: $path) {
-                      projects {
-                        name
-                        root
-                        projectType
-                      }
-                    }
-                  }
-                `,
-                variables: {
-                  path
-                }
-              }).valueChanges;
-            }),
-            map(r => {
-              return [...((r as any).data.workspace.projects)];
-            })
-        );
-    }
-
-    createMetadata(project: Project): ProjectMetadata {
-        return new ProjectMetadata(project, this.finder)
-    }
-
-    handleCommand(command: any) {
-        console.log('ProjectMetadataService.handleCommand', command); // TESTING
-        if (command.detail.name === 'navigateTo') {
-          const resourceTarget: ResourceTarget = {
-            projectName: command.detail.projectName,
-            resourcePath: command.detail.resourcePath
-          };
-          if (command.detail.platformType) {
-            resourceTarget.platformType = command.detail.platformType;
-          }
-          this.navigateToResource(resourceTarget);
-        }
-    }
-
-    navigateToResource(resourceTarget: ResourceTarget | null) {
-      console.log('ProjectMetadataService.navigateToResource', resourceTarget); // TESTING
-      if (resourceTarget) {
-          const resourcePath = resourceTarget.platformType ?
-            resourceTarget.platformType + '/' + resourceTarget.resourcePath :
-            resourceTarget.resourcePath;
-          this.router.navigate(
-            [
-              encodeURIComponent(resourceTarget.projectName),
-              encodeURIComponent(resourceTarget.resourcePath)
-            ],
-            { relativeTo: this.activatedRoute }
-          );
-        } else {
-          this.router.navigate(['.'], { relativeTo: this.activatedRoute });
-        }
-    }
-*/
 }
