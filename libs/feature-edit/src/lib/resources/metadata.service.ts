@@ -8,7 +8,7 @@ import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import { Project } from '@angular-console/schema';
 import { Task, TaskCollections, TaskCollection } from '@angular-console/ui';
-
+import { ResourceService } from '../resource/resource.service';
 export const PLATFORMS = ['web', 'mobile', 'vr'];
 
 export type PlatformType = 'web' | 'mobile' | 'vr';
@@ -31,7 +31,8 @@ export class MetadataService {
 
   constructor(
     private readonly apollo: Apollo,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly resourceService: ResourceService
   ) {}
 
   getProjects(): Observable<Array<MetaProject>> {
@@ -115,7 +116,7 @@ export class MetadataService {
     return combineLatest(projects$, selectedResource$).pipe(
       map(([projects, target]) => {
         const collections: Array<TaskCollection<ResourceTarget>> = projects.map(project => {
-          const collectionName = project.platformType ? project.name + ' - ' + project.platformType : project.name;
+          const collectionName = this.resourceService.getContextTitle(project.projectType, project.name, project.platformType);
           const collection: TaskCollection<ResourceTarget> =  {
             collectionName: collectionName,
             tasks: []

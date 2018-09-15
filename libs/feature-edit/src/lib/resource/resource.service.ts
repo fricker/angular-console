@@ -64,6 +64,23 @@ export class ResourceService {
     );
   }
 
+  getContextTitle(projectType: string, projectName: string, platformType?: string): string {
+    if (projectType === 'application' || projectName === platformType) {
+      return projectName;
+    }
+    return projectName + ' - ' + platformType;
+  }
+
+  getResourceTitle(resourceConfig: ResourceConfig): string | undefined {
+    if (resourceConfig) {
+      if (resourceConfig.projectType === 'application') {
+        return resourceConfig.path;
+      }
+      const index = resourceConfig.path.indexOf('/');
+      return resourceConfig.path.substring(index + 1);
+    }
+  }
+
   protected getContentType(resourcePath: string, context: any): string {
     const lastSlashIndex = resourcePath.lastIndexOf('/');
     const lastDotIndex = resourcePath.lastIndexOf('.');

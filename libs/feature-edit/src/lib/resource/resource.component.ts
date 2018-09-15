@@ -60,7 +60,8 @@ export class ResourceComponent implements OnInit {
   ngOnInit() {
 
     const tapConfig = (resourceConfig: ResourceConfig) => {
-      const contextTitle = resourceConfig.projectName;
+      const platformType = resourceConfig.path.substring(0, resourceConfig.path.indexOf('/'));
+      const contextTitle = this.resourceService.getContextTitle(resourceConfig.projectType, resourceConfig.projectName, platformType);
       this.contextActionService.contextualActions$.next({
         contextTitle,
         actions: [

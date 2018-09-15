@@ -3,12 +3,6 @@ import { Observable } from 'rxjs';
 
 import { ActivatedRoute } from '@angular/router';
 import { TaskCollections } from '@angular-console/ui';
-import {
-  map,
-  filter,
-  startWith,
-  distinctUntilChanged
-} from 'rxjs/operators';
 import { MetadataService, ResourceTarget } from './metadata.service';
 
 @Component({

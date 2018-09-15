@@ -30,6 +30,7 @@ import {
   switchMap
 } from 'rxjs/operators';
 import {ResourceConfig} from '../resource/resource-config';
+import {ResourceService} from '../resource/resource.service';
 import {ResourceTarget, MetadataService} from '../resources/metadata.service';
 
 interface FieldGrouping {
@@ -90,8 +91,13 @@ export class ContentComponent {
     private readonly serializer: Serializer,
     private readonly elementRef: ElementRef,
     private readonly completions: Completions,
-    private readonly metadataService: MetadataService
+    private readonly metadataService: MetadataService,
+    private readonly resourceService: ResourceService
   ) {}
+
+  get resourceTitle(): string | undefined {
+    return this.resourceService.getResourceTitle(this.resourceConfig);
+  }
 
   hideFields() {
     this.matExpansionPanels.forEach((panel: MatExpansionPanel) => {
