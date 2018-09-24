@@ -28,6 +28,10 @@ export function availableExtensions() {
     },
     { name: '@clr/angular', description: 'Clarity components' },
     {
+      name: '@mbd/schematics',
+      description: 'Meta By Design'
+    },
+    {
       name: '@nativescript/schematics',
       description: 'NativeScript Support'
     },

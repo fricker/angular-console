@@ -14,11 +14,13 @@ import {
   Output,
   QueryList,
   ViewChildren,
-  ViewEncapsulation
+  ViewEncapsulation,
+  OnInit,
+  OnDestroy
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatExpansionPanel } from '@angular/material';
-import { Completions, Serializer } from '@angular-console/utils';
+import { Completions, Serializer, EditorSupport } from '@angular-console/utils';
 import { CompletetionValue, Field } from '@angular-console/schema';
 import { Subscription } from 'rxjs';
 import {
@@ -31,7 +33,7 @@ import {
 } from 'rxjs/operators';
 import {ResourceConfig} from '../resource/resource-config';
 import {ResourceService} from '../resource/resource.service';
-import {ResourceTarget, MetadataService} from '../resources/metadata.service';
+import {MetadataService} from '../resources/metadata.service';
 
 interface FieldGrouping {
   type: 'important' | 'optional';
@@ -41,6 +43,13 @@ interface FieldGrouping {
 
 const DEBOUNCE_TIME = 300;
 
+export interface ContentAction {
+  name: string;
+  description: string;
+  icon: string,
+  invoke: (event: Event) => void
+};
+
 @Component({
   selector: 'mbd-content',
   templateUrl: './content.component.html',
@@ -48,15 +57,14 @@ const DEBOUNCE_TIME = 300;
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   animations: [
-    trigger('fadeInOut', [
+    trigger('actionFadeIn', [
       state('void', style({ opacity: 0 })),
       state('*', style({ opacity: 1 })),
-      transition(`:enter`, animate(`150ms ease-in-out`)),
-      transition(`:leave`, animate(`150ms ease-in-out`))
+      transition(`:enter`, animate(`500ms ease-in-out`))
     ])
   ]
 })
-export class ContentComponent {
+export class ContentComponent implements OnInit, OnDestroy {
   private _fields: Field[];
   private subscription: Subscription;
 
@@ -65,7 +73,7 @@ export class ContentComponent {
 
   fieldGroups: Array<FieldGrouping> = [];
 
-  @Input() path: string;
+  @Input() workspacePath: string;
   @Input() configurations: { name: string }[];
   @Input() prefix: string[];
   @Input() init: { [k: string]: any };
@@ -86,14 +94,58 @@ export class ContentComponent {
   @Output() readonly resizeFlags = new EventEmitter();
 
   formGroup: FormGroup;
+  private editorSubscription: Subscription;
+  actions: ContentAction[] = [];
 
   constructor(
     private readonly serializer: Serializer,
     private readonly elementRef: ElementRef,
     private readonly completions: Completions,
     private readonly metadataService: MetadataService,
-    private readonly resourceService: ResourceService
+    private readonly resourceService: ResourceService,
+    private readonly editorSupport: EditorSupport
   ) {}
+
+  ngOnInit() {
+    console.log('ContentComponent.ngOnInit', {
+      resourceConfig: this.resourceConfig
+    }); // TESTING
+    this.editorSubscription = this.editorSupport.editors.subscribe(editors => {
+      this.actions = editors.map(
+        (editor) => {
+          return {
+            name: editor.name,
+            description: `Open in ${editor.name}`,
+            icon: editor.icon,
+            invoke: (event: Event) => {
+              event.stopPropagation();
+              this.openInEditor(editor.name);
+            }
+          };
+        }
+      );
+    });
+  }
+
+  ngOnDestroy() {
+    console.log('ContentComponent.ngOnDestroy'); // TESTING
+    if (this.editorSubscription) {
+      this.editorSubscription.unsubscribe();
+    }
+  }
+
+  openInEditor(editorName: string) {
+    const projectSegment = this.resourceConfig.projectType === 'application' ? '/apps/' : '/libs/';
+    const contentDir = this.workspacePath + projectSegment + this.resourceConfig.projectName + '/src/meta/';
+    const resourcePath = editorName === 'Finder' ? this.directoryPath(this.resourceConfig.path) : this.resourceConfig.path;
+    console.log('--> openInEditor', editorName, contentDir + resourcePath);
+    this.editorSupport.openInEditor(editorName, contentDir + resourcePath);
+  }
+
+  private directoryPath(resourcePath: string): string {
+    const lastSegment = resourcePath.lastIndexOf('/');
+    return lastSegment === -1 ? '' : resourcePath.substring(0, lastSegment);
+  }
 
   get resourceTitle(): string | undefined {
     return this.resourceService.getResourceTitle(this.resourceConfig);
@@ -189,7 +241,7 @@ export class ContentComponent {
             debounceTime(DEBOUNCE_TIME),
             startWith(formControl.value),
             switchMap((v: string | null) =>
-              this.completions.completionsFor(this.path, f, v || '')
+              this.completions.completionsFor(this.workspacePath, f, v || '')
             ),
             publishReplay(1),
             refCount()
@@ -248,6 +300,12 @@ export class ContentComponent {
       this.configurations && value.configurations
         ? [`--configuration=${value.configurations}`]
         : [];
+    console.log('ContentComponent.emitNext', {
+      prefix: this.prefix,
+      configuration: configuration,
+      value: value,
+      fields: this._fields
+    }); // TESTING
     this.value.next({
       commands: [
         ...this.prefix,
@@ -272,18 +330,10 @@ export class ContentComponent {
     });
   }
 
-  // PLACEHOLDER
   handleCommand(command: any) {
     console.log('ContentComponent.handleCommand', command.detail); // TESTING
     if (command.detail.name === 'navigateTo') {
-      const resourceTarget: ResourceTarget = {
-        projectName: command.detail.projectName,
-        resourcePath: command.detail.resourcePath
-      };
-      if (command.detail.platformType) {
-        resourceTarget.platformType = command.detail.platformType;
-      }
-      this.metadataService.navigateToResource(resourceTarget);
+      this.metadataService.navigateToResource(command.detail.target);
       return;
     }
   }

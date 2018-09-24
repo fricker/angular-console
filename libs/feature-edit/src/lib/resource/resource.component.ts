@@ -1,5 +1,5 @@
 
-import { Component, ChangeDetectionStrategy, ViewChild, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   Observable,
@@ -17,7 +17,6 @@ import {
 
 import {
   ContextualActionBarService,
-  TaskRunnerComponent,
   TerminalComponent
 } from '@angular-console/ui';
 import {
@@ -26,8 +25,10 @@ import {
   Serializer
 } from '@angular-console/utils';
 import gql from 'graphql-tag';
-import {ResourceConfig} from './resource-config';
-import {ResourceService} from './resource.service';
+
+import { EditorComponent } from '../editor/editor.component';
+import { ResourceConfig } from './resource-config';
+import { ResourceService } from './resource.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,8 +36,9 @@ import {ResourceService} from './resource.service';
   templateUrl: './resource.component.html',
   styleUrls: ['./resource.component.css']
 })
-export class ResourceComponent implements OnInit {
+export class ResourceComponent implements OnInit, OnDestroy {
 
+  commandPrefix: string[] = [];
   configuration$: Observable<ResourceConfig>;
   commandArray$ = new BehaviorSubject<{ commands: string[]; valid: boolean }>({
     commands: [],
@@ -44,8 +46,8 @@ export class ResourceComponent implements OnInit {
   });
   command$: Observable<string>;
   commandOutput$: Observable<CommandOutput>;
+  @ViewChild(EditorComponent) editor: EditorComponent;
   @ViewChild(TerminalComponent) out: TerminalComponent;
-  @ViewChild(TaskRunnerComponent) taskRunner: TaskRunnerComponent;
   private readonly ngRun$ = new Subject<any>();
   private readonly ngRunDisabled$ = new BehaviorSubject(true);
 
@@ -59,16 +61,20 @@ export class ResourceComponent implements OnInit {
 
   ngOnInit() {
 
+    console.log('ResourceComponent.ngOnInit'); // TESTING
+
     const tapConfig = (resourceConfig: ResourceConfig) => {
+      console.log('ResourceComponent.tapConfig', resourceConfig); // TESTING
       const platformType = resourceConfig.path.substring(0, resourceConfig.path.indexOf('/'));
       const contextTitle = this.resourceService.getContextTitle(resourceConfig.projectType, resourceConfig.projectName, platformType);
+      this.commandPrefix = ['g', '@mbd/schematics:pwa', '--appName=stacks', '--project=' + resourceConfig.projectName];
       this.contextActionService.contextualActions$.next({
         contextTitle,
         actions: [
           {
             invoke: this.ngRun$,
             disabled: this.ngRunDisabled$,
-            name: 'Run'
+            name: 'Generate Modules'
           }
         ]
       });
@@ -81,7 +87,7 @@ export class ResourceComponent implements OnInit {
       withLatestFrom(this.commandArray$),
       tap(() => {
         // this.flags.hideFields();
-        this.taskRunner.terminalVisible.next(true);
+        this.editor.terminalVisible.next(true);
       }),
       switchMap(([_, c]) => {
         this.out.reset();
@@ -109,6 +115,10 @@ export class ResourceComponent implements OnInit {
     );
   }
 
+  ngOnDestroy() {
+    console.log('ResourceComponent.ngOnDestroy'); // TESTING
+  }
+
   workspacePath() {
     return this.route.snapshot.params.path;
   }
@@ -123,7 +133,8 @@ export class ResourceComponent implements OnInit {
     // this.runner.stopCommand();
   }
 
-  onFlagsChange(e: { commands: string[]; valid: boolean }) {
+  onCommandsChange(e: { commands: string[]; valid: boolean }) {
+    console.log('ResourceComponent.onCommandsChange', e.commands); // TESTING
     setTimeout(() => this.commandArray$.next(e), 0);
     this.ngRunDisabled$.next(!e.valid);
   }

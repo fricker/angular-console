@@ -4,12 +4,12 @@
   <mbd-content
     [resourceConfig]="resourceConfig"
     [configurations]="[]"
-    [prefix]="[resourceConfig.projectName, resourceConfig.path]"
+    [prefix]="commandPrefix"
     [fields]="[]"
-    (value)="onFlagsChange($event)"
+    (value)="onCommandsChange($event)"
     (action)="onRun()"
     (stop)="onStop()"
-    [path]="workspacePath()">
+    [workspacePath]="workspacePath()">
   </mbd-content>
   <ui-terminal
     [command]="command$ | async"

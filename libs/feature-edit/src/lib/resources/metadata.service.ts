@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd, Params, NavigationExtras } from '@angular/router';
 import { Observable, combineLatest } from 'rxjs';
 import { map, switchMap, filter, startWith, distinctUntilChanged } from 'rxjs/operators';
 
@@ -19,9 +19,11 @@ export interface MetaProject extends Project {
 }
 
 export interface ResourceTarget {
+    title: string;
     projectName: string;
     resourcePath: string;
     platformType?: PlatformType;
+    params?: Params;
 }
 
 @Injectable()
@@ -123,6 +125,7 @@ export class MetadataService {
           };
           project.meta.forEach((metaFile) => {
             const task: ResourceTarget = {
+              title: metaFile,
               projectName: project.name,
               resourcePath: metaFile
             };
@@ -146,22 +149,22 @@ export class MetadataService {
     );
   }
 
-  navigateToResource(resourceTarget: ResourceTarget | null) {
+  navigateToResource(target: ResourceTarget | null) {
     if (!this.currentRoute) {
       throw new Error('currentRoute not set on MetadataService');
     }
-    if (resourceTarget) {
-      const resourcePath = resourceTarget.platformType ? resourceTarget.platformType + '/' + resourceTarget.resourcePath : resourceTarget.resourcePath;
-      this.router.navigate(
-        [
-          encodeURIComponent(resourceTarget.projectName),
-          encodeURIComponent(resourcePath)
-        ],
-        { relativeTo: this.currentRoute }
-      );
+    const extras: NavigationExtras = { relativeTo: this.currentRoute };
+    let path: any[];
+    if (target) {
+      const resourcePath = target.platformType ? target.platformType + '/' + target.resourcePath : target.resourcePath;
+      path = [encodeURIComponent(target.projectName), encodeURIComponent(resourcePath)];
+      if (target.params) {
+        path.push(target.params);
+      }
     } else {
-      this.router.navigate(['.'], { relativeTo: this.currentRoute });
+      path = ['.'];
     }
+    this.router.navigate(path, extras);
   }
 
   private getSelectedTask(collections: Array<TaskCollection<ResourceTarget>>, target: ResourceTarget): Task<ResourceTarget> | null {

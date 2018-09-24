@@ -20,12 +20,19 @@
 
       <mat-expansion-panel-header>
         <mat-panel-title>
-          {{resourceTitle}}
+          {{resourceTitle}}   
         </mat-panel-title>
+        <div *ngIf="actions"
+          class="non-contextual-actions-container" fxLayout="row" fxLayoutAlign="end center" fxLayoutGap="16px">
+          <ng-container *ngFor="let action of actions;">
+            <button @actionFadeIn (click)="action.invoke($event)" class="action-button" mat-icon-button [matTooltip]="action.description">
+              <img height="32px" [src]="'/assets/' + action.icon + '.png'" />
+            </button>
+          </ng-container>
+        </div>
       </mat-expansion-panel-header>
 
       <div class="field">
-        <!--<mbd-edit-resource [resourceConfig]="resourceConfig" (commandOutput)="metadataService.handleCommand($event)"></mbd-edit-resource>-->
         <mbd-edit-resource [resourceConfig]="resourceConfig" (commandOutput)="handleCommand($event)"></mbd-edit-resource>
       </div>
 

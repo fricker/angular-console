@@ -80,7 +80,7 @@ export class WorkspaceComponent implements OnDestroy {
       url: 'extensions',
       title: 'Add/Remove CLI Extensions'
     },
-    { icon: 'create', url: 'meta', title: 'Edit Metadata' },
+    { icon: 'create', url: 'resources', title: 'Edit Resources' },
   ];
 
   readonly sideNavAnimationState$ = this.contextualActionBarService.contextualActions$.pipe(
