@@ -7,7 +7,10 @@ import { map, switchMap, tap, publishReplay, refCount } from 'rxjs/operators';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 
+import { ResourceTarget } from './resource-target';
 import { ResourceConfig } from './resource-config';
+
+const REQUIRED_PARAMS = ['path', 'project', 'resource'];
 
 @Injectable()
 export class ResourceService {
@@ -15,6 +18,7 @@ export class ResourceService {
   constructor(private readonly apollo: Apollo) {}
 
   getConfiguration(route: ActivatedRoute, tapConfig: (resourceConfig: ResourceConfig) => void): Observable<ResourceConfig> {
+
     const resourceParams$ = route.params.pipe(
       map(params => {
         if (!params.project || !params.resource) return null;
@@ -49,14 +53,24 @@ export class ResourceService {
       map((response: any) => {
         const resource = response.data.resource;
         const context = JSON.parse(resource.context);
-        return {
-          projectType: resource.projectType,
+        const resourceTarget: ResourceTarget = {
           projectName: resource.projectName,
-          path: resource.path,
+          projectType: resource.projectType,
+          resourcePath: resource.path
+        };
+        const resourceConfig: ResourceConfig = {
+          target: resourceTarget,
           contentType: this.getContentType(resource.path, context),
           content: JSON.parse(resource.content),
           context: context
-        }
+        };
+        Object.keys(route.snapshot.params).filter(key => !REQUIRED_PARAMS.includes(key)).forEach((key) => {
+          if (!resourceTarget.params) {
+            resourceTarget.params = {};
+          }
+          resourceTarget.params[key] = route.snapshot.params[key];
+        });
+        return resourceConfig;
       }),
       tap(tapConfig),
       publishReplay(1),
@@ -64,20 +78,28 @@ export class ResourceService {
     );
   }
 
-  getContextTitle(projectType: string, projectName: string, platformType?: string): string {
-    if (projectType === 'application' || projectName === platformType) {
-      return projectName;
+  getContextTitle(resourceTarget: ResourceTarget): string {
+    const platformType = resourceTarget.platformType ?
+                         resourceTarget.platformType :
+                         resourceTarget.resourcePath.substring(0, resourceTarget.resourcePath.indexOf('/'));
+    if (resourceTarget.projectType === 'application' || resourceTarget.projectName === platformType) {
+      return resourceTarget.projectName;
     }
-    return projectName + ' - ' + platformType;
+    return resourceTarget.projectName + ' - ' + platformType;
   }
 
-  getResourceTitle(resourceConfig: ResourceConfig): string | undefined {
-    if (resourceConfig) {
-      if (resourceConfig.projectType === 'application') {
-        return resourceConfig.path;
+  getResourceTitle(resourceTarget: ResourceTarget): string | undefined {
+    if (resourceTarget) {
+      let resourceTitle: string;
+      if (resourceTarget.projectType === 'application') {
+        resourceTitle = resourceTarget.resourcePath;
+      } else {
+        resourceTitle = resourceTarget.resourcePath.substring(resourceTarget.resourcePath.indexOf('/') + 1);
       }
-      const index = resourceConfig.path.indexOf('/');
-      return resourceConfig.path.substring(index + 1);
+      if (resourceTarget.params && resourceTarget.params.module) {
+        resourceTitle += '#' + resourceTarget.params.module;
+      }
+      return resourceTitle;
     }
   }
 

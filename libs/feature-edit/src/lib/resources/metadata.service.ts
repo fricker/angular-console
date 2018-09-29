@@ -8,23 +8,18 @@ import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import { Project } from '@angular-console/schema';
 import { Task, TaskCollections, TaskCollection } from '@angular-console/ui';
-import { ResourceService } from '../resource/resource.service';
-export const PLATFORMS = ['web', 'mobile', 'vr'];
 
-export type PlatformType = 'web' | 'mobile' | 'vr';
+import { PlatformType, PLATFORMS } from '../platform/platform-type';
+import { ResourceTarget } from '../resource/resource-target';
+import { ResourceService } from '../resource/resource.service';
 
 export interface MetaProject extends Project {
   platformType?: PlatformType;
   meta: string[];
 }
 
-export interface ResourceTarget {
-    title: string;
-    projectName: string;
-    resourcePath: string;
-    platformType?: PlatformType;
-    params?: Params;
-}
+const SKIP_META_FILES = ['options.json'];
+const DEBUGGING = false;
 
 @Injectable()
 export class MetadataService {
@@ -79,28 +74,29 @@ export class MetadataService {
       startWith(null),
       map(() => {
         const firstChild = this.currentRoute.snapshot.firstChild;
+        if (DEBUGGING) {
+          console.log('MetadataService.getSelectedResource', { firstChild: firstChild });
+        }
+        const resourceTarget: any = {};
         if (firstChild) {
-          const projectName = decodeURIComponent(firstChild.params.project);
+          resourceTarget.projectName = decodeURIComponent(firstChild.params.project);
+          if (firstChild.params.module) {
+            resourceTarget.params = {module: decodeURIComponent(firstChild.params.module)};
+          }
           const resourcePath = decodeURIComponent(firstChild.params.resource);
           const resourceSegments = resourcePath.split('/');
           if (resourceSegments.length && PLATFORMS.indexOf(resourceSegments[0]) !== -1) {
-            const platformType = resourceSegments[0];
+            resourceTarget.platformType = resourceSegments[0];
             resourceSegments.splice(0, 1);
-            return {
-              projectName: projectName,
-              resourcePath: resourceSegments.join('/'),
-              platformType: platformType
-            };
-          }
-          return {
-            projectName: projectName,
-            resourcePath: resourcePath
+            resourceTarget.resourcePath = resourceSegments.join('/');
+          } else {
+            resourceTarget.resourcePath = resourcePath;
           };
+        } else {
+          resourceTarget.projectName = null;
+          resourceTarget.resourcePath = null;
         }
-        return {
-          projectName: '',
-          resourcePath: ''
-        };
+        return resourceTarget;
       }),
       distinctUntilChanged(
         (a: ResourceTarget, b: ResourceTarget) => {
@@ -118,15 +114,24 @@ export class MetadataService {
     return combineLatest(projects$, selectedResource$).pipe(
       map(([projects, target]) => {
         const collections: Array<TaskCollection<ResourceTarget>> = projects.map(project => {
-          const collectionName = this.resourceService.getContextTitle(project.projectType, project.name, project.platformType);
+          const projectTarget: ResourceTarget = {
+            projectName: project.name,
+            resourcePath: '',
+            projectType: project.projectType,
+            platformType: project.platformType
+          };
           const collection: TaskCollection<ResourceTarget> =  {
-            collectionName: collectionName,
+            collectionName: this.resourceService.getContextTitle(projectTarget),
             tasks: []
           };
           project.meta.forEach((metaFile) => {
+            if (SKIP_META_FILES.includes(metaFile)) {
+              return;
+            }
             const task: ResourceTarget = {
               title: metaFile,
               projectName: project.name,
+              projectType: project.projectType,
               resourcePath: metaFile
             };
             if (project.platformType) {

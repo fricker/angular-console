@@ -3,7 +3,8 @@ import { Observable } from 'rxjs';
 
 import { ActivatedRoute } from '@angular/router';
 import { TaskCollections } from '@angular-console/ui';
-import { MetadataService, ResourceTarget } from './metadata.service';
+import { ResourceTarget } from '../resource/resource-target';
+import { MetadataService } from './metadata.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

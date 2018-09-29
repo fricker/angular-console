@@ -30,6 +30,8 @@ import { EditorComponent } from '../editor/editor.component';
 import { ResourceConfig } from './resource-config';
 import { ResourceService } from './resource.service';
 
+const DEBUGGING = false;
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'mbd-resource',
@@ -61,13 +63,16 @@ export class ResourceComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
-    console.log('ResourceComponent.ngOnInit'); // TESTING
+    if (DEBUGGING) { console.log('ResourceComponent.ngOnInit'); }
 
     const tapConfig = (resourceConfig: ResourceConfig) => {
-      console.log('ResourceComponent.tapConfig', resourceConfig); // TESTING
-      const platformType = resourceConfig.path.substring(0, resourceConfig.path.indexOf('/'));
-      const contextTitle = this.resourceService.getContextTitle(resourceConfig.projectType, resourceConfig.projectName, platformType);
-      this.commandPrefix = ['g', '@mbd/schematics:pwa', '--appName=stacks', '--project=' + resourceConfig.projectName];
+      const contextTitle = this.resourceService.getContextTitle(resourceConfig.target);
+      this.commandPrefix = ['g', '@mbd/schematics:pwa', '--appName=stacks', '--project=' + resourceConfig.target.projectName];
+      if (DEBUGGING) {
+        console.log('ResourceComponent.tapConfig', {
+          resourceConfig: resourceConfig, contextTitle: contextTitle, commandPrefix: this.commandPrefix
+        });
+      }
       this.contextActionService.contextualActions$.next({
         contextTitle,
         actions: [
@@ -116,7 +121,7 @@ export class ResourceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    console.log('ResourceComponent.ngOnDestroy'); // TESTING
+    if (DEBUGGING) { console.log('ResourceComponent.ngOnDestroy'); }
   }
 
   workspacePath() {
@@ -124,17 +129,16 @@ export class ResourceComponent implements OnInit, OnDestroy {
   }
 
   onRun() {
-    console.log('ResourceComponent.onRun');
+    if (DEBUGGING) { console.log('ResourceComponent.onRun'); }
     // this.ngRun$.next();
   }
 
   onStop() {
-    console.log('ResourceComponent.onStop');
+    if (DEBUGGING) { console.log('ResourceComponent.onStop'); }
     // this.runner.stopCommand();
   }
 
   onCommandsChange(e: { commands: string[]; valid: boolean }) {
-    console.log('ResourceComponent.onCommandsChange', e.commands); // TESTING
     setTimeout(() => this.commandArray$.next(e), 0);
     this.ngRunDisabled$.next(!e.valid);
   }

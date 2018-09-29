@@ -42,6 +42,7 @@ interface FieldGrouping {
 }
 
 const DEBOUNCE_TIME = 300;
+const DEBUGGING = false;
 
 export interface ContentAction {
   name: string;
@@ -107,9 +108,11 @@ export class ContentComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    console.log('ContentComponent.ngOnInit', {
-      resourceConfig: this.resourceConfig
-    }); // TESTING
+    if (DEBUGGING) {
+      console.log('ContentComponent.ngOnInit', {
+        resourceConfig: this.resourceConfig
+      });
+    }
     this.editorSubscription = this.editorSupport.editors.subscribe(editors => {
       this.actions = editors.map(
         (editor) => {
@@ -128,17 +131,17 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    console.log('ContentComponent.ngOnDestroy'); // TESTING
+    if (DEBUGGING) { console.log('ContentComponent.ngOnDestroy'); }
     if (this.editorSubscription) {
       this.editorSubscription.unsubscribe();
     }
   }
 
   openInEditor(editorName: string) {
-    const projectSegment = this.resourceConfig.projectType === 'application' ? '/apps/' : '/libs/';
-    const contentDir = this.workspacePath + projectSegment + this.resourceConfig.projectName + '/src/meta/';
-    const resourcePath = editorName === 'Finder' ? this.directoryPath(this.resourceConfig.path) : this.resourceConfig.path;
-    console.log('--> openInEditor', editorName, contentDir + resourcePath);
+    const projectSegment = this.resourceConfig.target.projectType === 'application' ? '/apps/' : '/libs/';
+    const contentDir = this.workspacePath + projectSegment + this.resourceConfig.target.projectName + '/src/meta/';
+    const resourcePath = editorName === 'Finder' ? this.directoryPath(this.resourceConfig.target.resourcePath) : this.resourceConfig.target.resourcePath;
+    if (DEBUGGING) { console.log('--> openInEditor', editorName, contentDir + resourcePath); }
     this.editorSupport.openInEditor(editorName, contentDir + resourcePath);
   }
 
@@ -148,7 +151,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   get resourceTitle(): string | undefined {
-    return this.resourceService.getResourceTitle(this.resourceConfig);
+    return this.resourceService.getResourceTitle(this.resourceConfig.target);
   }
 
   hideFields() {
@@ -300,12 +303,14 @@ export class ContentComponent implements OnInit, OnDestroy {
       this.configurations && value.configurations
         ? [`--configuration=${value.configurations}`]
         : [];
-    console.log('ContentComponent.emitNext', {
-      prefix: this.prefix,
-      configuration: configuration,
-      value: value,
-      fields: this._fields
-    }); // TESTING
+    if (DEBUGGING) {
+      console.log('ContentComponent.emitNext', {
+        prefix: this.prefix,
+        configuration: configuration,
+        value: value,
+        fields: this._fields
+      });
+    }
     this.value.next({
       commands: [
         ...this.prefix,
@@ -331,7 +336,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   handleCommand(command: any) {
-    console.log('ContentComponent.handleCommand', command.detail); // TESTING
+    if (DEBUGGING) { console.log('ContentComponent.handleCommand', command.detail); }
     if (command.detail.name === 'navigateTo') {
       this.metadataService.navigateToResource(command.detail.target);
       return;

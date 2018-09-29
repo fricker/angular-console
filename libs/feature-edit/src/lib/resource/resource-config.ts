@@ -1,8 +1,12 @@
 
+import { ResourceTarget } from './resource-target';
+
 export class ResourceConfig {
-    projectType: string;
-    projectName: string;
-    path: string;
+    target: ResourceTarget;
+    // projectName: string;
+    // resourcePath: string;
+    // projectType: string;
+    // params?: Params;
     contentType: string;
     content: any;
     context: any;
