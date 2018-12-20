@@ -7,8 +7,8 @@ import { map, switchMap, tap, publishReplay, refCount } from 'rxjs/operators';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 
+import { ElementConfig } from '../content/element-config';
 import { ResourceTarget } from './resource-target';
-import { ResourceConfig } from './resource-config';
 
 const REQUIRED_PARAMS = ['path', 'project', 'resource'];
 
@@ -17,7 +17,7 @@ export class ResourceService {
 
   constructor(private readonly apollo: Apollo) {}
 
-  getConfiguration(route: ActivatedRoute, tapConfig: (resourceConfig: ResourceConfig) => void): Observable<ResourceConfig> {
+  getConfiguration(route: ActivatedRoute, tapConfig: (elementConfig: ElementConfig) => void): Observable<ElementConfig> {
 
     const resourceParams$ = route.params.pipe(
       map(params => {
@@ -58,7 +58,7 @@ export class ResourceService {
           projectType: resource.projectType,
           resourcePath: resource.path
         };
-        const resourceConfig: ResourceConfig = {
+        const elementConfig: ElementConfig = {
           target: resourceTarget,
           contentType: this.getContentType(resource.path, context),
           content: JSON.parse(resource.content),
@@ -70,7 +70,7 @@ export class ResourceService {
           }
           resourceTarget.params[key] = route.snapshot.params[key];
         });
-        return resourceConfig;
+        return elementConfig;
       }),
       tap(tapConfig),
       publishReplay(1),

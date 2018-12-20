@@ -1,8 +1,8 @@
 
-<mbd-editor *ngIf="configuration$ | async as resourceConfig"
+<mbd-editor *ngIf="configuration$ | async as elementConfig"
   terminalWindowTitle="Command output">
   <mbd-content
-    [resourceConfig]="resourceConfig"
+    [elementConfig]="elementConfig"
     [configurations]="[]"
     [prefix]="commandPrefix"
     [fields]="[]"

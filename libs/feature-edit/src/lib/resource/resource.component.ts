@@ -27,7 +27,7 @@ import {
 import gql from 'graphql-tag';
 
 import { EditorComponent } from '../editor/editor.component';
-import { ResourceConfig } from './resource-config';
+import { ElementConfig } from '../content/element-config';
 import { ResourceService } from './resource.service';
 
 const DEBUGGING = false;
@@ -41,7 +41,7 @@ const DEBUGGING = false;
 export class ResourceComponent implements OnInit, OnDestroy {
 
   commandPrefix: string[] = [];
-  configuration$: Observable<ResourceConfig>;
+  configuration$: Observable<ElementConfig>;
   commandArray$ = new BehaviorSubject<{ commands: string[]; valid: boolean }>({
     commands: [],
     valid: true
@@ -65,12 +65,12 @@ export class ResourceComponent implements OnInit, OnDestroy {
 
     if (DEBUGGING) { console.log('ResourceComponent.ngOnInit'); }
 
-    const tapConfig = (resourceConfig: ResourceConfig) => {
-      const contextTitle = this.resourceService.getContextTitle(resourceConfig.target);
-      this.commandPrefix = ['g', '@mbd/schematics:pwa', '--appName=stacks', '--project=' + resourceConfig.target.projectName];
+    const tapConfig = (elementConfig: ElementConfig) => {
+      const contextTitle = this.resourceService.getContextTitle(elementConfig.target);
+      this.commandPrefix = ['g', '@mbd/schematics:pwa', '--appName=stacks', '--project=' + elementConfig.target.projectName];
       if (DEBUGGING) {
         console.log('ResourceComponent.tapConfig', {
-          resourceConfig: resourceConfig, contextTitle: contextTitle, commandPrefix: this.commandPrefix
+          elementConfig: elementConfig, contextTitle: contextTitle, commandPrefix: this.commandPrefix
         });
       }
       this.contextActionService.contextualActions$.next({

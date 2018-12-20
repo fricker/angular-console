@@ -40,7 +40,7 @@ export class ImportWorkspaceComponent implements OnDestroy {
   }
 
   disableNonAngularDirectory(node: DynamicFlatNode): boolean {
-    return node.file.type !== 'angularDirectory';
+    return false; // node.file.type !== 'angularDirectory';
   }
 
   ngOnDestroy() {

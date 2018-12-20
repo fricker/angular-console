@@ -31,7 +31,7 @@ import {
   startWith,
   switchMap
 } from 'rxjs/operators';
-import {ResourceConfig} from '../resource/resource-config';
+import {ElementConfig} from './element-config';
 import {ResourceService} from '../resource/resource.service';
 import {MetadataService} from '../resources/metadata.service';
 
@@ -87,7 +87,7 @@ export class ContentComponent implements OnInit, OnDestroy {
     this.fieldGroups = this.toFieldGroups(f);
     this.setForm();
   }
-  @Input() resourceConfig: ResourceConfig;
+  @Input() elementConfig: ElementConfig;
 
   @Output() readonly value = new EventEmitter();
   @Output() readonly action = new EventEmitter();
@@ -110,7 +110,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   ngOnInit() {
     if (DEBUGGING) {
       console.log('ContentComponent.ngOnInit', {
-        resourceConfig: this.resourceConfig
+        elementConfig: this.elementConfig
       });
     }
     this.editorSubscription = this.editorSupport.editors.subscribe(editors => {
@@ -138,9 +138,9 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   openInEditor(editorName: string) {
-    const projectSegment = this.resourceConfig.target.projectType === 'application' ? '/apps/' : '/libs/';
-    const contentDir = this.workspacePath + projectSegment + this.resourceConfig.target.projectName + '/src/meta/';
-    const resourcePath = editorName === 'Finder' ? this.directoryPath(this.resourceConfig.target.resourcePath) : this.resourceConfig.target.resourcePath;
+    const projectSegment = this.elementConfig.target.projectType === 'application' ? '/apps/' : '/libs/';
+    const contentDir = this.workspacePath + projectSegment + this.elementConfig.target.projectName + '/src/meta/';
+    const resourcePath = editorName === 'Finder' ? this.directoryPath(this.elementConfig.target.resourcePath) : this.elementConfig.target.resourcePath;
     if (DEBUGGING) { console.log('--> openInEditor', editorName, contentDir + resourcePath); }
     this.editorSupport.openInEditor(editorName, contentDir + resourcePath);
   }
@@ -151,7 +151,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   get resourceTitle(): string | undefined {
-    return this.resourceService.getResourceTitle(this.resourceConfig.target);
+    return this.resourceService.getResourceTitle(this.elementConfig.target);
   }
 
   hideFields() {
