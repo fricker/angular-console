@@ -109,7 +109,7 @@ export class ContentComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (DEBUGGING) {
-      console.log('ContentComponent.ngOnInit', {
+      console.log('+++ ContentComponent.ngOnInit', {
         elementConfig: this.elementConfig
       });
     }
@@ -131,7 +131,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (DEBUGGING) { console.log('ContentComponent.ngOnDestroy'); }
+    if (DEBUGGING) { console.log('--- ContentComponent.ngOnDestroy'); }
     if (this.editorSubscription) {
       this.editorSubscription.unsubscribe();
     }
@@ -323,7 +323,7 @@ export class ContentComponent implements OnInit, OnDestroy {
     if (e.scrollTo) {
       e.scrollTo({
         top: 0,
-        behavior: 'instant'
+        behavior: 'auto'
       });
     }
   }

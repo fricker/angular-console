@@ -63,14 +63,16 @@ export class ResourceComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
-    if (DEBUGGING) { console.log('ResourceComponent.ngOnInit'); }
+    if (DEBUGGING) { console.log('+++ ResourceComponent.ngOnInit'); }
 
     const tapConfig = (elementConfig: ElementConfig) => {
       const contextTitle = this.resourceService.getContextTitle(elementConfig.target);
       this.commandPrefix = ['g', '@mbd/schematics:pwa', '--appName=stacks', '--project=' + elementConfig.target.projectName];
       if (DEBUGGING) {
         console.log('ResourceComponent.tapConfig', {
-          elementConfig: elementConfig, contextTitle: contextTitle, commandPrefix: this.commandPrefix
+          elementConfig: elementConfig,
+          contextTitle: contextTitle,
+          commandPrefix: this.commandPrefix
         });
       }
       this.contextActionService.contextualActions$.next({
@@ -121,7 +123,7 @@ export class ResourceComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (DEBUGGING) { console.log('ResourceComponent.ngOnDestroy'); }
+    if (DEBUGGING) { console.log('--- ResourceComponent.ngOnDestroy'); }
   }
 
   workspacePath() {

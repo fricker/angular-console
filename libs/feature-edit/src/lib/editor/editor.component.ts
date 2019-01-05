@@ -11,6 +11,7 @@ import {
   Component,
   ContentChild,
   Input,
+  OnInit,
   OnDestroy
 } from '@angular/core';
 import { BehaviorSubject, merge, Subscription, EMPTY } from 'rxjs';
@@ -19,6 +20,7 @@ import { ContentComponent } from '../content/content.component';
 import { TerminalComponent } from '@angular-console/ui';
 
 const ANIMATION_DURATION = 300;
+const DEBUGGING = false;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,7 +39,7 @@ const ANIMATION_DURATION = 300;
     ])
   ]
 })
-export class EditorComponent implements AfterContentInit, OnDestroy {
+export class EditorComponent implements AfterContentInit, OnInit, OnDestroy {
   @Input() terminalWindowTitle: string;
 
   @ContentChild(ContentComponent) contentComponent: ContentComponent | undefined;
@@ -48,6 +50,10 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
     map(visible => (visible ? 'grow' : 'shrink'))
   );
   resizeSubscription: Subscription | undefined;
+
+  ngOnInit() {
+    if (DEBUGGING) { console.log('+++ EditorComponent.ngOnInit'); }
+  }
 
   ngAfterContentInit() {
     const TIME_BUFFER = 50;
@@ -64,6 +70,7 @@ export class EditorComponent implements AfterContentInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (DEBUGGING) { console.log('--- EditorComponent.ngOnDestroy'); }
     if (this.resizeSubscription) {
       this.resizeSubscription.unsubscribe();
     }

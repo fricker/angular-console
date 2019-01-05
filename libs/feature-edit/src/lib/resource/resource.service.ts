@@ -23,7 +23,7 @@ export class ResourceService {
       map(params => {
         if (!params.project || !params.resource) return null;
         return {
-          workspacePath: params.path,
+          workspacePath: params.path, 
           projectName: decodeURIComponent(params.project),
           resourcePath: decodeURIComponent(params.resource)
         };
