@@ -42,7 +42,7 @@ interface FieldGrouping {
 }
 
 const DEBOUNCE_TIME = 300;
-const DEBUGGING = false;
+const DEBUGGING = true;
 
 export interface ContentAction {
   name: string;
@@ -109,7 +109,7 @@ export class ContentComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (DEBUGGING) {
-      console.log('+++ ContentComponent.ngOnInit', {
+      console.log('***** +++ ContentComponent.ngOnInit', {
         elementConfig: this.elementConfig
       });
     }
@@ -131,7 +131,7 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (DEBUGGING) { console.log('--- ContentComponent.ngOnDestroy'); }
+    if (DEBUGGING) { console.log('***** --- ContentComponent.ngOnDestroy'); }
     if (this.editorSubscription) {
       this.editorSubscription.unsubscribe();
     }
@@ -336,10 +336,9 @@ export class ContentComponent implements OnInit, OnDestroy {
   }
 
   handleCommand(command: any) {
-    if (DEBUGGING) { console.log('ContentComponent.handleCommand', command.detail); }
+    if (DEBUGGING) { console.log('***** ContentComponent.handleCommand', command.detail); }
     if (command.detail.name === 'navigateTo') {
       this.metadataService.navigateToResource(command.detail.target);
-      return;
     }
   }
 }

@@ -11,6 +11,7 @@ import { ElementConfig } from '../content/element-config';
 import { ResourceTarget } from './resource-target';
 
 const REQUIRED_PARAMS = ['path', 'project', 'resource'];
+const DEBUGGING = true;
 
 @Injectable()
 export class ResourceService {
@@ -23,7 +24,7 @@ export class ResourceService {
       map(params => {
         if (!params.project || !params.resource) return null;
         return {
-          workspacePath: params.path, 
+          workspacePath: params.path,
           projectName: decodeURIComponent(params.project),
           resourcePath: decodeURIComponent(params.resource)
         };
@@ -70,6 +71,9 @@ export class ResourceService {
           }
           resourceTarget.params[key] = route.snapshot.params[key];
         });
+        if (DEBUGGING) {
+          console.log('***** ResourceService.getConfiguration - elementConfig', elementConfig);
+        }
         return elementConfig;
       }),
       tap(tapConfig),
